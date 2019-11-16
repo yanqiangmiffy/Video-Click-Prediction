@@ -24,6 +24,7 @@ user_df = pd.read_feather(root / 'user.feather')
 
 df = pd.concat([train_df, test_df], sort=False, axis=0)
 
+print(train_df.shape[0] - train_df.count())
 print(test_df.shape[0] - test_df.count())
 print(train_df['ts'].head(1))
 
@@ -52,6 +53,6 @@ no_features = ['id', 'target','ts']
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 
-
+print(train.target.value_counts())
 def load_data():
     return train, test, no_features, features
