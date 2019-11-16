@@ -29,7 +29,7 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_feather(root / 'train.feather')[:2000]
+train_df = pd.read_feather(root / 'train.feather')[:20000]
 train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_feather(root / 'test.feather')
 print(train_df.shape)
@@ -49,6 +49,7 @@ def preprocess(df):
 
 df = pd.concat([train_df, test_df], sort=False, axis=0)
 preprocess(df)
+
 cate_cols = ['deviceid',  'device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel']
 
 for col in cate_cols:
@@ -57,12 +58,13 @@ for col in cate_cols:
     df[col] = df[col].fillna('999')
     df[col] = lb.fit_transform(df[col])
 
-no_features = ['id', 'target', 'ts','guid']
+no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid',]
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(100).to_csv('tmp/df.csv', index=None)
 print(features)
 
+print(train['target'].value_counts())
 
 def load_data():
     return train, test, no_features, features
