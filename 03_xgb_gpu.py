@@ -17,6 +17,7 @@ n_fold = 3
 y_scores = 0
 y_pred_l1 = np.zeros([n_fold, test.shape[0]])
 y_pred_all_l1 = np.zeros(test.shape[0])
+
 fea_importances = np.zeros(len(features))
 
 label = ['target']
@@ -31,14 +32,14 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                                          train.loc[valid_index][features], train[label].loc[valid_index]
 
     bst = xgb.XGBClassifier(max_depth=3,
-                            n_estimators=10000,
+                            n_estimators=100,
                             verbosity=1,
                             learning_rate=0.01,
                             # tree_method='gpu_hist'
                             )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
-            eval_metric=['auc','logloss'],
+            eval_metric=['logloss'],
             verbose=True,
             early_stopping_rounds=500)
 
@@ -54,7 +55,7 @@ test[['id', 'target']].to_csv('result/xgb_seed1314.csv', index=False)
 
 r=y_pred_all_l1 / n_fold
 sample_submission['target'] = r
-sample_submission.to_csv('result/xgb', index=False, sep=",")
+sample_submission.to_csv('result/xgb.csv', index=False, sep=",")
 
 sample_submission['target'] = [1 if x >0.45 else 0 for x in r ]
 print(sample_submission['target'].value_counts())

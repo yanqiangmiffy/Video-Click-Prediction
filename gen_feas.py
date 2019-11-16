@@ -12,7 +12,7 @@ from tqdm import tqdm
 from sklearn.preprocessing import *
 from numpy import random
 from pathlib import Path
-
+import gc
 
 # 辅助函数
 def statics():
@@ -29,7 +29,7 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_feather(root / 'train.feather')[:20000]
+train_df = pd.read_feather(root / 'train.feather')[:2000]
 train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_feather(root / 'test.feather')
 print(train_df.shape)
@@ -50,21 +50,26 @@ def preprocess(df):
 df = pd.concat([train_df, test_df], sort=False, axis=0)
 preprocess(df)
 
-cate_cols = ['deviceid',  'device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel']
-
-for col in cate_cols:
+cate_cols = [ 'device_vendor', 'app_version', 'osversion', 'netmodel']
+df=pd.get_dummies(df,columns=cate_cols)
+for col in ['device_version']:
     lb = LabelEncoder()
     df[col] = df[col].astype(str)
     df[col] = df[col].fillna('999')
     df[col] = lb.fit_transform(df[col])
 
-no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid',]
+no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid','deviceid',]
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(100).to_csv('tmp/df.csv', index=None)
+print("df shape",df.shape)
+
+del df
+gc.collect()
+
 print(features)
-
 print(train['target'].value_counts())
-
+print("train_df shape",train_df.shape)
+print("test_df shape",test_df.shape)
 def load_data():
     return train, test, no_features, features
