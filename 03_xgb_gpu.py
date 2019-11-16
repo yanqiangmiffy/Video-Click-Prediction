@@ -7,7 +7,6 @@ from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import xgboost as xgb
 from sklearn.model_selection import StratifiedKFold, KFold
-
 from gen_feas import load_data
 
 train, test, no_featuress, features = load_data()
@@ -21,6 +20,9 @@ y_pred_all_l1 = np.zeros(test.shape[0])
 fea_importances = np.zeros(len(features))
 
 label = ['target']
+train[label]=train[label].astype(int)
+print(train[label])
+
 # [1314, 4590]
 kfold = StratifiedKFold(n_splits=n_fold, shuffle=True, random_state=1314)
 for i, (train_index, valid_index) in enumerate(kfold.split(train[features], train[label])):
@@ -28,8 +30,16 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     X_train, y_train, X_valid, y_valid = train.loc[train_index][features], train[label].loc[train_index], \
                                          train.loc[valid_index][features], train[label].loc[valid_index]
 
-    bst = xgb.XGBClassifier(max_depth=3, n_estimators=10000, verbosity=1, learning_rate=0.01,tree_method='gpu_hist')
-    bst.fit(X_train, y_train, eval_set=[(X_valid, y_valid)], eval_metric='auc', verbose=500,
+    bst = xgb.XGBClassifier(max_depth=3,
+                            n_estimators=10000,
+                            verbosity=1,
+                            learning_rate=0.01,
+                            # tree_method='gpu_hist'
+                            )
+    bst.fit(X_train, y_train,
+            eval_set=[(X_valid, y_valid)],
+            eval_metric=['auc','logloss'],
+            verbose=True,
             early_stopping_rounds=500)
 
     y_pred_l1[i] = bst.predict_proba(test[features])[:, 1]

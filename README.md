@@ -19,3 +19,6 @@ Memory usage of dataframe is 8.83 MB
 Memory usage after optimization is: 16.85 MB
 Decreased by -90.9%
 ```
+## gpu
+lgb gpu 弃用
+xgb gpu 速度很快
