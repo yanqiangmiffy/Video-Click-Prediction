@@ -172,11 +172,11 @@ def get_user_fea():
 
     return user_grouped_df
 
-app_fea=get_app_fea()
-user_fea=get_user_fea()
-
-df = pd.merge(df, app_fea, on='deviceid', how='left')
-df = pd.merge(df, user_fea, on='deviceid', how='left')
+# app_fea=get_app_fea()
+# user_fea=get_user_fea()
+#
+# df = pd.merge(df, app_fea, on='deviceid', how='left')
+# df = pd.merge(df, user_fea, on='deviceid', how='left')
 
 no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid','timestamp']
 features = [fea for fea in df.columns if fea not in no_features]

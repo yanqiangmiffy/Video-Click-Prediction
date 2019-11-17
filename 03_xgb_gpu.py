@@ -8,9 +8,15 @@ import xgboost as xgb
 from sklearn.model_selection import StratifiedKFold, KFold
 from gen_feas import load_data
 
-train, test, no_featuress, features = load_data()
-sample_submission = pd.read_feather( 'data/sample_submission.feather')
 
+def xgb_f1(y, t):
+    t = t.get_label()
+    y_bin = [1. if y_cont > 0.5 else 0. for y_cont in y]  # binaryzing your output
+    return 'f1', f1_score(t, y_bin)
+
+
+train, test, no_featuress, features = load_data()
+sample_submission = pd.read_feather('data/sample_submission.feather')
 
 n_fold = 10
 y_scores = 0
@@ -20,7 +26,7 @@ y_pred_all_l1 = np.zeros(test.shape[0])
 fea_importances = np.zeros(len(features))
 
 label = ['target']
-train[label]=train[label].astype(int)
+train[label] = train[label].astype(int)
 print(train[label])
 
 # [1314, 4590]
@@ -37,25 +43,23 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                             )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
-            eval_metric=['logloss','auc'],
+            eval_metric=['logloss', 'auc',xgb_f1],
             verbose=True,
             early_stopping_rounds=500)
-    valid_pred=bst.predict(X_valid)
-    print( bst.predict_proba(X_valid))
+    valid_pred = bst.predict(X_valid)
+    print(bst.predict_proba(X_valid))
     print(valid_pred)
-    print(accuracy_score(y_valid,valid_pred))
+    print(accuracy_score(y_valid, valid_pred))
     y_pred_l1[i] = bst.predict_proba(test[features])[:, 1]
     y_pred_all_l1 += y_pred_l1[i]
     y_scores += bst.best_score
 
     fea_importances += bst.feature_importances_
 
-
-
-r=y_pred_all_l1 / n_fold
+r = y_pred_all_l1 / n_fold
 sample_submission['target'] = r
 sample_submission.to_csv('result/xgb_prob.csv', index=False, sep=",")
 
-sample_submission['target'] = [1 if x >0.50 else 0 for x in r ]
+sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
 print(sample_submission['target'].value_counts())
 sample_submission.to_csv('result/xgb_result.csv', index=False)
