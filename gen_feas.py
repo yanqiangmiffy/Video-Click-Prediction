@@ -199,7 +199,7 @@ def add_lag_feature(data, window=3):
         data[f'{col}_min_lag{window}'] = lag_min[col]
         data[f'{col}_std_lag{window}'] = lag_std[col]
     return data
-df=add_lag_feature(df)
+# df=add_lag_feature(df)
 
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp']
 features = [fea for fea in df.columns if fea not in no_features]
