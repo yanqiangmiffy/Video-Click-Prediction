@@ -9,7 +9,7 @@ from sklearn.model_selection import StratifiedKFold, KFold
 from gen_feas import load_data
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import gc
 
 
 train, test, no_featuress, features = load_data()
@@ -17,7 +17,6 @@ sample_submission = pd.read_feather('data/sample_submission.feather')
 
 n_fold = 10
 y_scores = 0
-y_pred_l1 = np.zeros([n_fold, test.shape[0]])
 y_pred_all_l1 = np.zeros(test.shape[0])
 
 fea_importances = np.zeros(len(features))
@@ -33,9 +32,9 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     X_train, y_train, X_valid, y_valid = train.loc[train_index][features], train[label].loc[train_index], \
                                          train.loc[valid_index][features], train[label].loc[valid_index]
     bst = xgb.XGBClassifier(max_depth=3,
-                            n_estimators=2000,
+                            n_estimators=1500,
                             verbosity=1,
-                            learning_rate=0.1,
+                            learning_rate=0.2,
                             tree_method='gpu_hist'
                             )
     bst.fit(X_train, y_train,
@@ -44,13 +43,15 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
             verbose=True,
             early_stopping_rounds=500)
     valid_pred = bst.predict(X_valid)
-    print("accuracy:",accuracy_score(y_valid, valid_pred))
+    # print("accuracy:",accuracy_score(y_valid, valid_pred))
     print("f1-score:",f1_score(y_valid, valid_pred))
-    y_pred_l1[i] = bst.predict_proba(test[features])[:, 1]
-    y_pred_all_l1 += y_pred_l1[i]
+    y_pred_all_l1 += bst.predict_proba(test[features])[:, 1]
     y_scores += bst.best_score
 
     fea_importances += bst.feature_importances_
+    del bst
+    del valid_pred
+    gc.collect()
 
 r = y_pred_all_l1 / n_fold
 sample_submission['target'] = r
