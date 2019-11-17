@@ -9,10 +9,6 @@ from sklearn.model_selection import StratifiedKFold, KFold
 from gen_feas import load_data
 
 
-def xgb_f1(y, t):
-    t = t.get_label()
-    y_bin = [1. if y_cont > 0.5 else 0. for y_cont in y]  # binaryzing your output
-    return 'f1', f1_score(t, y_bin)
 
 
 train, test, no_featuress, features = load_data()
@@ -43,13 +39,12 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                             )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
-            eval_metric=['logloss', 'auc',xgb_f1],
+            eval_metric=['logloss', 'auc'],
             verbose=True,
             early_stopping_rounds=500)
     valid_pred = bst.predict(X_valid)
-    print(bst.predict_proba(X_valid))
-    print(valid_pred)
-    print(accuracy_score(y_valid, valid_pred))
+    print("accuracy:",accuracy_score(y_valid, valid_pred))
+    print("f1-score:",f1_score(y_valid, valid_pred))
     y_pred_l1[i] = bst.predict_proba(test[features])[:, 1]
     y_pred_all_l1 += y_pred_l1[i]
     y_scores += bst.best_score
