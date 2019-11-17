@@ -15,7 +15,7 @@ import gc
 train, test, no_featuress, features = load_data()
 sample_submission = pd.read_feather('data/sample_submission.feather')
 
-n_fold = 10
+n_fold = 5
 y_scores = 0
 y_pred_all_l1 = np.zeros(test.shape[0])
 
