@@ -35,7 +35,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     bst = xgb.XGBClassifier(max_depth=3,
                             n_estimators=20000,
                             verbosity=1,
-                            learning_rate=0.05,
+                            learning_rate=0.1,
                             tree_method='gpu_hist'
                             )
     bst.fit(X_train, y_train,
