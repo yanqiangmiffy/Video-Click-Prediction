@@ -32,14 +32,15 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_feather(root / 'train.feather')[:1000]
+train_df = pd.read_feather(root / 'train.feather')[:100000]
 train_df['target'] = train_df['target'].astype(int)
 # train_df = shuffle(train_df)
 test_df = pd.read_feather(root / 'test.feather')
 print(train_df.shape)
 print(test_df.shape)
-train_df.tail(100000).to_csv('tmp/train.csv',index=None)
-test_df.head(200).to_csv('tmp/test.csv',index=None)
+train_df.tail(100000).to_csv('tmp/train.csv', index=None)
+test_df.head(200).to_csv('tmp/test.csv', index=None)
+
 app_df = pd.read_feather(root / 'app.feather')
 user_df = pd.read_feather(root / 'user.feather')
 
@@ -55,7 +56,8 @@ def preprocess(df):
 df = pd.concat([train_df, test_df], sort=False, axis=0)
 preprocess(df)
 
-cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel']+['pos','netmodel','osversion']
+cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + ['pos', 'netmodel',
+                                                                                           'osversion']
 # df=pd.get_dummies(df,columns=cate_cols)
 for col in cate_cols:
     lb = LabelEncoder()
@@ -178,6 +180,28 @@ def get_user_fea():
     return user_grouped_df
 
 
+def get_news_fea(df):
+    print("get_news_fea....")
+    # 视频出现次数
+    df['news_count'] = df.groupby('newsid')['id'].transform('count')  #
+    # 视频推荐的人数
+    df['news_guid_unique'] = df.groupby(by='newsid')['guid'].transform('nunique')  # 人数
+
+    df['news_deviceid_unique'] = df.groupby(by='newsid')['deviceid'].transform('nunique')  # 设备
+    df['news_pos_unique'] = df.groupby(by='newsid')['pos'].transform('nunique')
+    df['news_app_version_unique'] = df.groupby(by='newsid')['app_version'].transform('nunique')
+    df['news_device_vendor_unique'] = df.groupby(by='newsid')['device_vendor'].transform('nunique')
+    df['news_netmodel_unique'] = df.groupby(by='newsid')['netmodel'].transform('nunique')
+    df['news_osversion_unique'] = df.groupby(by='newsid')['osversion'].transform('nunique')
+    df['news_device_version_unique'] = df.groupby(by='newsid')['device_version'].transform('nunique')
+
+    df['news_lng_unique'] = df.groupby(by='newsid')['lng'].transform('nunique')  # 地理
+    df['news_lat_unique'] = df.groupby(by='newsid')['lat'].transform('nunique')
+    return df
+
+
+df = get_news_fea(df)
+
 app_fea = get_app_fea()
 user_fea = get_user_fea()
 
@@ -188,7 +212,7 @@ df = pd.merge(df, user_fea, on='deviceid', how='left')
 def add_lag_feature(data, window=3):
     print("add lag fea ...")
     group_df = data.groupby('deviceid')
-    cols = ['pos','netmodel','osversion','lng','lat']
+    cols = ['pos', 'netmodel', 'osversion', 'lng', 'lat']
     rolled = group_df[cols].rolling(window=window, min_periods=0)
     lag_mean = rolled.mean().reset_index().astype(np.float16)
     lag_max = rolled.max().reset_index().astype(np.float16)
@@ -200,6 +224,8 @@ def add_lag_feature(data, window=3):
         data[f'{col}_min_lag{window}'] = lag_min[col]
         data[f'{col}_std_lag{window}'] = lag_std[col]
     return data
+
+
 # df=add_lag_feature(df)
 
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp']
