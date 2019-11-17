@@ -178,7 +178,7 @@ user_fea=get_user_fea()
 df = pd.merge(df, app_fea, on='deviceid', how='left')
 df = pd.merge(df, user_fea, on='deviceid', how='left')
 
-no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid']
+no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid','timestamp']
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(100).to_csv('tmp/df.csv', index=None)
