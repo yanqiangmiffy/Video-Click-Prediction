@@ -29,7 +29,7 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_feather(root / 'train.feather')[:100000]
+train_df = pd.read_feather(root / 'train.feather')
 train_df['target'] = train_df['target'].astype(int)
 train_df=shuffle(train_df)
 test_df = pd.read_feather(root / 'test.feather')
