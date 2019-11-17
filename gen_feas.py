@@ -8,12 +8,15 @@
 @description:
 """
 import pandas as pd
+import numpy as np
 from tqdm import tqdm
 from sklearn.preprocessing import *
 from numpy import random
 from pathlib import Path
 import gc
 from sklearn.utils import shuffle
+
+
 # 辅助函数
 def statics():
     stats = []
@@ -31,7 +34,7 @@ def statics():
 root = Path('./data/')
 train_df = pd.read_feather(root / 'train.feather')
 train_df['target'] = train_df['target'].astype(int)
-train_df=shuffle(train_df)
+train_df = shuffle(train_df)
 test_df = pd.read_feather(root / 'test.feather')
 print(train_df.shape)
 print(test_df.shape)
@@ -73,7 +76,6 @@ def get_app_fea():
     grouped_df = grouped_df.reset_index()
     app_grouped_df = pd.merge(app_grouped_df, grouped_df, on='deviceid', how='left')
 
-
     # 统计一个设备上applist对应的不同device个数总数
     app_df['applist_count'] = app_df.groupby('applist')['deviceid'].transform('count')
     grouped_df = app_df.groupby(by='deviceid').agg({'applist_count': ['sum']})
@@ -82,6 +84,7 @@ def get_app_fea():
     app_grouped_df = pd.merge(app_grouped_df, grouped_df, on='deviceid', how='left')
 
     return app_grouped_df
+
 
 def get_user_fea():
     print("生成 user 特征....")
@@ -93,6 +96,7 @@ def get_user_fea():
     grouped_df.columns = ['deviceid_unique_guid']
     grouped_df = grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
     # user_df['deviceid_nunique_guid'] = user_df.groupby('deviceid').guid.transform('nunique')
 
     # 一个设备的outertag 的统计
@@ -172,26 +176,46 @@ def get_user_fea():
 
     return user_grouped_df
 
-# app_fea=get_app_fea()
-# user_fea=get_user_fea()
-#
-# df = pd.merge(df, app_fea, on='deviceid', how='left')
-# df = pd.merge(df, user_fea, on='deviceid', how='left')
 
-no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid','timestamp']
+app_fea = get_app_fea()
+user_fea = get_user_fea()
+
+df = pd.merge(df, app_fea, on='deviceid', how='left')
+df = pd.merge(df, user_fea, on='deviceid', how='left')
+
+
+def add_lag_feature(data, window=3):
+    print("add lag fea ...")
+    group_df = data.groupby('deviceid')
+    cols = ['pos','netmodel','osversion','lng','lat']
+    rolled = group_df[cols].rolling(window=window, min_periods=0)
+    lag_mean = rolled.mean().reset_index().astype(np.float16)
+    lag_max = rolled.max().reset_index().astype(np.float16)
+    lag_min = rolled.min().reset_index().astype(np.float16)
+    lag_std = rolled.std().reset_index().astype(np.float16)
+    for col in cols:
+        data[f'{col}_mean_lag{window}'] = lag_mean[col]
+        data[f'{col}_max_lag{window}'] = lag_max[col]
+        data[f'{col}_min_lag{window}'] = lag_min[col]
+        data[f'{col}_std_lag{window}'] = lag_std[col]
+    return data
+df=add_lag_feature(df)
+
+no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp']
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(100).to_csv('tmp/df.csv', index=None)
 test.head(100).to_csv('tmp/test.csv', index=None)
-print("df shape",df.shape)
+print("df shape", df.shape)
 
 del df
 gc.collect()
 
-
-print("len(features),features",len(features),features)
+print("len(features),features", len(features), features)
 print(train['target'].value_counts())
-print("train shape",train.shape)
-print("test shape",test.shape)
+print("train shape", train.shape)
+print("test shape", test.shape)
+
+
 def load_data():
     return train, test, no_features, features
