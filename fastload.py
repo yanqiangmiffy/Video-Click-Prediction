@@ -32,13 +32,23 @@ sample_submission = pd.read_csv(os.path.join(root, 'sample.csv'))
 train_df['ts'] = pd.to_datetime(train_df['ts'])
 test_df['ts'] = pd.to_datetime(test_df['ts'])
 
+# train_df['ts'] = pd.to_datetime(train_df['ts']).dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai')
+# test_df['ts'] = pd.to_datetime(test_df['ts']).dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai')
+
+# train_df['ts'] = pd.to_datetime(train_df['ts'], unit='s').dt.strftime('%Y-%m-%d %H:%M:%S')
+# test_df['ts'] = pd.to_datetime(test_df['ts'], unit='s').dt.strftime('%Y-%m-%d %H:%M:%S')
+
+# train_df['ts'] = pd.to_datetime(train_df['ts'],utc=True).tz_convert("Asia/Shanghai")
+# test_df['ts'] = pd.to_datetime(test_df['ts'],utc=True).tz_convert("Asia/Shanghai")
+
+# dt.tz_localize('UTC').dt.tz_convert('Asia/Kolkata')
 reduce_mem_usage(train_df)
 reduce_mem_usage(test_df)
 reduce_mem_usage(app_df)
 reduce_mem_usage(user_df)
 
-train_df.to_feather(os.path.join(root,'train.feather'))
-test_df.to_feather(os.path.join(root,'test.feather'))
-app_df.to_feather(os.path.join(root,'app.feather'))
-user_df.to_feather(os.path.join(root,'user.feather'))
-sample_submission.to_feather(os.path.join(root,'sample_submission.feather'))
+train_df.to_feather(os.path.join(root, 'train.feather'))
+test_df.to_feather(os.path.join(root, 'test.feather'))
+app_df.to_feather(os.path.join(root, 'app.feather'))
+user_df.to_feather(os.path.join(root, 'user.feather'))
+sample_submission.to_feather(os.path.join(root, 'sample_submission.feather'))

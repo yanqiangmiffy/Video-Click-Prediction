@@ -35,7 +35,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                             n_estimators=100,
                             verbosity=1,
                             learning_rate=0.01,
-                            # tree_method='gpu_hist'
+                            tree_method='gpu_hist'
                             )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
