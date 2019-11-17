@@ -193,7 +193,7 @@ def add_lag_feature(data, window=3):
     lag_max = rolled.max().reset_index().astype(np.float16)
     lag_min = rolled.min().reset_index().astype(np.float16)
     lag_std = rolled.std().reset_index().astype(np.float16)
-    for col in cols:
+    for col in tqdm(cols):
         data[f'{col}_mean_lag{window}'] = lag_mean[col]
         data[f'{col}_max_lag{window}'] = lag_max[col]
         data[f'{col}_min_lag{window}'] = lag_min[col]
