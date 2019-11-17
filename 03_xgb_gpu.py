@@ -33,10 +33,10 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     X_train, y_train, X_valid, y_valid = train.loc[train_index][features], train[label].loc[train_index], \
                                          train.loc[valid_index][features], train[label].loc[valid_index]
     bst = xgb.XGBClassifier(max_depth=3,
-                            n_estimators=100,
+                            n_estimators=100000,
                             verbosity=1,
                             learning_rate=0.01,
-                            # tree_method='gpu_hist'
+                            tree_method='gpu_hist'
                             )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
