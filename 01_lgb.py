@@ -37,6 +37,7 @@ from sklearn.model_selection import KFold
 import lightgbm as lgb
 import xgboost as xgb
 import catboost as cb
+from sklearn.metrics import *
 
 from utils import *
 
@@ -136,6 +137,8 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
     gini_cv.append(tmp_gini)
     print("valid auc:", tmp_auc)
     print("valid gini:", tmp_gini)
+    print("f1_score",f1_score(y_valid, y_pred))
+
     # test
     pred = gbm.predict(test_data, num_iteration=gbm.best_iteration)
     pred_cv.append(pred)
