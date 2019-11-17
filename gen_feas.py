@@ -32,13 +32,14 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_feather(root / 'train.feather')
+train_df = pd.read_feather(root / 'train.feather')[:1000]
 train_df['target'] = train_df['target'].astype(int)
-train_df = shuffle(train_df)
+# train_df = shuffle(train_df)
 test_df = pd.read_feather(root / 'test.feather')
 print(train_df.shape)
 print(test_df.shape)
-
+train_df.tail(100000).to_csv('tmp/train.csv',index=None)
+test_df.head(200).to_csv('tmp/test.csv',index=None)
 app_df = pd.read_feather(root / 'app.feather')
 user_df = pd.read_feather(root / 'user.feather')
 
@@ -205,7 +206,6 @@ no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp']
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(100).to_csv('tmp/df.csv', index=None)
-test.head(100).to_csv('tmp/test.csv', index=None)
 print("df shape", df.shape)
 
 del df

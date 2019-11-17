@@ -7,7 +7,8 @@ import numpy as np
 import xgboost as xgb
 from sklearn.model_selection import StratifiedKFold, KFold
 from gen_feas import load_data
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 
@@ -35,7 +36,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                             n_estimators=100,
                             verbosity=1,
                             learning_rate=0.01,
-                            tree_method='gpu_hist'
+                            # tree_method='gpu_hist'
                             )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
@@ -58,3 +59,16 @@ sample_submission.to_csv('result/xgb_prob.csv', index=False, sep=",")
 sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
 print(sample_submission['target'].value_counts())
 sample_submission.to_csv('result/xgb_result.csv', index=False)
+
+
+fea_importance_df=pd.DataFrame({
+    'features':features,
+    'importance':fea_importances
+})
+
+plt.figure(figsize=(14, 30))
+sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))
+plt.title('Features importance (averaged/folds)')
+plt.tight_layout()
+plt.show()
+

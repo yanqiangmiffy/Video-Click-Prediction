@@ -9,6 +9,7 @@
 """
 import os
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
+import datetime
 
 from utils import *
 
@@ -29,9 +30,16 @@ user_df = pd.read_csv(os.path.join(root, 'user.csv'))
 test_df = pd.read_csv(os.path.join(root, 'test.csv'))
 sample_submission = pd.read_csv(os.path.join(root, 'sample.csv'))
 
+def get_time_str(x):
+    dateArray = datetime.datetime.utcfromtimestamp(x)
+    otherStyleTime = dateArray.strftime('%Y-%m-%d %H:%M:%S')
+    return otherStyleTime
+train_df['ts'] = train_df['ts'].apply(lambda x:get_time_str(x/1000))
+test_df['ts'] = test_df['ts'].apply(lambda x:get_time_str(x/1000))
+
 train_df['ts'] = pd.to_datetime(train_df['ts'])
 test_df['ts'] = pd.to_datetime(test_df['ts'])
-
+print(test_df['ts'])
 # train_df['ts'] = pd.to_datetime(train_df['ts']).dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai')
 # test_df['ts'] = pd.to_datetime(test_df['ts']).dt.tz_localize('UTC').dt.tz_convert('Asia/Shanghai')
 
