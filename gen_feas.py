@@ -54,7 +54,7 @@ def preprocess(df):
 df = pd.concat([train_df, test_df], sort=False, axis=0)
 preprocess(df)
 
-cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel']
+cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel']+['pos','netmodel','osversion']
 # df=pd.get_dummies(df,columns=cate_cols)
 for col in cate_cols:
     lb = LabelEncoder()
