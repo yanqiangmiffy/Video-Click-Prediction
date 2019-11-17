@@ -13,7 +13,7 @@ from sklearn.preprocessing import *
 from numpy import random
 from pathlib import Path
 import gc
-
+from sklearn.utils import shuffle
 # 辅助函数
 def statics():
     stats = []
@@ -29,8 +29,9 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_feather(root / 'train.feather')
+train_df = pd.read_feather(root / 'train.feather')[:100000]
 train_df['target'] = train_df['target'].astype(int)
+train_df=shuffle(train_df)
 test_df = pd.read_feather(root / 'test.feather')
 print(train_df.shape)
 print(test_df.shape)
@@ -72,14 +73,6 @@ def get_app_fea():
     grouped_df = grouped_df.reset_index()
     app_grouped_df = pd.merge(app_grouped_df, grouped_df, on='deviceid', how='left')
 
-    # 统计一个设备的出现过的app总数
-    app_df['app_nums'] = app_df['applist'].apply(lambda x: len(x.replace('[', '').replace(']', '').split(' ')))
-    app_df.app_nums.head()
-
-    grouped_df = app_df.groupby(by='deviceid').agg({'app_nums': ['sum']})
-    grouped_df.columns = ['app_nums_sum']
-    grouped_df = grouped_df.reset_index()
-    app_grouped_df = pd.merge(app_grouped_df, grouped_df, on='deviceid', how='left')
 
     # 统计一个设备上applist对应的不同device个数总数
     app_df['applist_count'] = app_df.groupby('applist')['deviceid'].transform('count')
@@ -185,14 +178,16 @@ user_fea=get_user_fea()
 df = pd.merge(df, app_fea, on='deviceid', how='left')
 df = pd.merge(df, user_fea, on='deviceid', how='left')
 
-no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid',]
+no_features = ['id', 'target','ts','guid', 'deviceid', 'newsid']
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(100).to_csv('tmp/df.csv', index=None)
+test.head(100).to_csv('tmp/test.csv', index=None)
 print("df shape",df.shape)
 
 del df
 gc.collect()
+
 
 print("len(features),features",len(features),features)
 print(train['target'].value_counts())

@@ -2,8 +2,7 @@
 # !pip install tqdm --user
 # !pip install seaborn --user
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
-
+from sklearn.metrics import *
 import numpy as np
 import xgboost as xgb
 from sklearn.model_selection import StratifiedKFold, KFold
@@ -25,12 +24,11 @@ train[label]=train[label].astype(int)
 print(train[label])
 
 # [1314, 4590]
-kfold = StratifiedKFold(n_splits=n_fold, shuffle=True, random_state=1314)
+kfold = StratifiedKFold(n_splits=n_fold, shuffle=False, random_state=1314)
 for i, (train_index, valid_index) in enumerate(kfold.split(train[features], train[label])):
-    print(i)
+    print("n。{}_th fold".format(i))
     X_train, y_train, X_valid, y_valid = train.loc[train_index][features], train[label].loc[train_index], \
                                          train.loc[valid_index][features], train[label].loc[valid_index]
-
     bst = xgb.XGBClassifier(max_depth=3,
                             n_estimators=100,
                             verbosity=1,
@@ -39,24 +37,25 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                             )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
-            eval_metric=['logloss'],
+            eval_metric=['logloss','auc'],
             verbose=True,
             early_stopping_rounds=500)
-
+    valid_pred=bst.predict(X_valid)
+    print( bst.predict_proba(X_valid))
+    print(valid_pred)
+    print(accuracy_score(y_valid,valid_pred))
     y_pred_l1[i] = bst.predict_proba(test[features])[:, 1]
     y_pred_all_l1 += y_pred_l1[i]
     y_scores += bst.best_score
 
     fea_importances += bst.feature_importances_
 
-test['target'] = y_pred_all_l1 / n_fold
-print('average score is {}'.format(y_scores / n_fold))
-test[['id', 'target']].to_csv('result/xgb_seed1314.csv', index=False)
+
 
 r=y_pred_all_l1 / n_fold
 sample_submission['target'] = r
-sample_submission.to_csv('result/xgb.csv', index=False, sep=",")
+sample_submission.to_csv('result/xgb_prob.csv', index=False, sep=",")
 
-sample_submission['target'] = [1 if x >0.45 else 0 for x in r ]
+sample_submission['target'] = [1 if x >0.50 else 0 for x in r ]
 print(sample_submission['target'].value_counts())
 sample_submission.to_csv('result/xgb_result.csv', index=False)
