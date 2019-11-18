@@ -23,5 +23,11 @@ Decreased by -90.9%
 lgb gpu 弃用
 xgb gpu 速度很快
 
+
+## 特征工程
+
+- 转化率特征：过拟合
+
+
 ## 参考资料
 - [基于特征工程的视频点击率预测算法](http://xblk.ecnu.edu.cn/CN/html/20180309.htm)
