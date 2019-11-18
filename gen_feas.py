@@ -142,8 +142,8 @@ def get_user_fea():
                     score += 0
         return score
 
-    # user_df['outertag_nums'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_nums(x))
-    # user_df['outertag_score'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_score(x))
+    user_df['outertag_nums'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_nums(x))
+    user_df['outertag_score'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_score(x))
 
     user_df['tag_nums'] = user_df['tag'].astype('str').apply(lambda x: get_outertag_nums(x))
     user_df['tag_score'] = user_df['tag'].astype('str').apply(lambda x: get_outertag_score(x))
