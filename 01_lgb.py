@@ -107,6 +107,7 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
 
     # 设置参数
     params = {
+        'learning_rate':0.2,
         'boosting_type': 'gbdt',
         'objective': 'binary',
         'metric': {'auc'},
