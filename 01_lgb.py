@@ -110,7 +110,7 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
         'boosting_type': 'gbdt',
         'objective': 'binary',
         'metric': {'auc'},
-        'verbose': -1,
+        'verbose': 1,
         "nthread": -1
         # 'lambda_l1':0.25,
         # 'lambda_l2':0.5,
@@ -124,7 +124,7 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
                     num_boost_round=2000,
                     valid_sets=(lgb_train, lgb_eval),
                     early_stopping_rounds=100,
-                    verbose_eval=500,
+                    verbose_eval=50,
                     feval=evalerror,
                     feature_name=features,
 
