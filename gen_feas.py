@@ -277,8 +277,10 @@ def get_combination_fea(df):
                              'netmodel_hour','netmodel_dayofweek'])
 
     for col in combination_cols:
+        print(col)
         df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
-    df.drop(columns=combination_cols, inplace=True)
+        del df[col]
+        gc.collect()
     return df
 
 
