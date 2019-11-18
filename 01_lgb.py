@@ -127,7 +127,7 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
                     early_stopping_rounds=100,
                     verbose_eval=50,
                     feval=evalerror,
-                    feature_name=features,
+                    # feature_name=features,
 
                     )
 
