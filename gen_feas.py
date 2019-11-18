@@ -257,18 +257,18 @@ def get_combination_fea(df):
     """
     print('添加组合特征...')
     combination_cols = []
-    df['deviceid_newsid'] = df['deviceid'].astype(str) + df['newsid'].astype(str)
-    df['guid_newsid'] = df['guid'].astype(str) + df['newsid'].astype(str)
-    df['pos_newsid'] = df['pos'].astype(str) + df['newsid'].astype(str)
-    df['device_vendor_newsid'] = df['device_vendor'].astype(str) + df['newsid'].astype(str)
-    df['lng_newsid'] = df['lng'].astype(str) + df['newsid'].astype(str)
-    df['hour_newsid'] = df['hour'].astype(str) + df['newsid'].astype(str)
-    df['dayofweek_newsid'] = df['dayofweek'].astype(str) + df['newsid'].astype(str)
+    df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['device_vendor_newsid'] =( df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['dayofweek_newsid'] =( df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
 
-    df['dayofweek_hour'] = df['dayofweek'].astype(str) + df['hour'].astype(str)
+    df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
 
-    df['netmodel_hour'] = df['netmodel'].astype(str) + df['hour'].astype(str)
-    df['netmodel_dayofweek'] = df['netmodel'].astype(str) + df['dayofweek'].astype(str)
+    df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+    df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
 
     combination_cols.extend(['deviceid_newsid', 'guid_newsid',
                              'pos_newsid', 'device_vendor_newsid',
