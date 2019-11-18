@@ -91,9 +91,8 @@ start = time.time()
 N = 5
 skf = StratifiedKFold(n_splits=N, shuffle=True, random_state=2018)
 
-gini_cv = []
-auc_cv = []
-pred_cv = []
+auc_cv=[]
+y_pred_all_l1 = np.zeros(test.shape[0])
 for k, (train_in, test_in) in enumerate(skf.split(X, y)):
     X_train, X_valid, y_train, y_valid = X[train_in], X[test_in], \
                                          y[train_in], y[test_in]
@@ -133,47 +132,39 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
     y_pred = gbm.predict(X_valid, num_iteration=gbm.best_iteration)
     # 评估
     tmp_auc = roc_auc_score(y_valid, y_pred)
-    tmp_gini = Gini(y_valid, y_pred)
     auc_cv.append(tmp_auc)
-    gini_cv.append(tmp_gini)
-    print("valid auc:", tmp_auc)
-    print("valid gini:", tmp_gini)
-    print("f1_score",f1_score(y_valid, y_pred))
+    print("auc_score", tmp_auc)
 
     # test
-    pred = gbm.predict(test_data, num_iteration=gbm.best_iteration)
-    pred_cv.append(pred)
+    y_pred_all_l1 += gbm.predict(test_data, num_iteration=gbm.best_iteration)
 
-lgb.plot_importance(gbm, max_num_features=20)
-plt.show()
+    del gbm, y_pred
+    gc.collect()
+
 
 
 # K交叉验证的平均分数
 print('the cv information:')
 print(auc_cv)
 print('cv auc mean score', np.mean(auc_cv))
-print('cv gini mean score', np.mean(gini_cv))
 
 end = time.time()
 print("......................run with time: ", (end - start) / 60.0)
 print("over:*********************************")
 
-# 10.5折交叉验证结果均值融合，保存文件
-mean_auc = np.mean(auc_cv)
-print("mean auc:", mean_auc)
-filepath = 'result/lgb_' + str(mean_auc) + '.csv'  # 线下平均分数
+# K交叉验证的平均分数
+print('the cv information:')
+print('cv f1 mean score', np.mean(auc_cv))
 
-# 转为array
-res = np.array(pred_cv)
-print("总的结果：", res.shape)
-# 最后结果平均，mean
-# r = res.mean(axis=0)
-r = np.median(res, axis=0)
-print('result shape:', r.shape)
+end = time.time()
+print("......................run with time: ", (end - start) / 60.0)
+print("over:*********************************")
 
+
+r = y_pred_all_l1 / skf.n_splits
 sample_submission['target'] = r
-sample_submission.to_csv(filepath, index=False, sep=",")
+sample_submission.to_csv('result/lgb_prob.csv', index=False, sep=",")
 
-sample_submission['target'] = [1 if x >0.5 else 0 for x in r ]
+sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
 print(sample_submission['target'].value_counts())
-sample_submission.to_csv('result/result.csv', index=False)
+sample_submission.to_csv('result/lgb_result.csv', index=False)

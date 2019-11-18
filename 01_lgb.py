@@ -136,7 +136,7 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
     # 评估
     tmp_auc = roc_auc_score(y_valid, y_pred)
     auc_cv.append(tmp_auc)
-    print("f1_score", tmp_auc)
+    print("auc_score", tmp_auc)
 
     # test
     y_pred_all_l1 += gbm.predict(test_data, num_iteration=gbm.best_iteration)

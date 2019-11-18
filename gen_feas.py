@@ -15,7 +15,7 @@ from numpy import random
 from pathlib import Path
 import gc
 from sklearn.utils import shuffle
-
+from utils import *
 
 # 辅助函数
 def statics():
@@ -27,7 +27,7 @@ def statics():
     stats_df = pd.DataFrame(stats, columns=['Feature', 'Unique_values', 'Percentage of missing values',
                                             'Percentage of values in the biggest category', 'type'])
     stats_df.sort_values('Unique_values', ascending=False, inplace=True)
-    stats_df.to_excel('stats_train.xlsx', index=None)
+    stats_df.to_excel('tmp/stats_train.xlsx', index=None)
 
 
 # 加载数据
@@ -36,11 +36,12 @@ train_df = pd.read_feather(root / 'train.feather')
 train_df['target'] = train_df['target'].astype(int)
 # train_df = shuffle(train_df)
 test_df = pd.read_feather(root / 'test.feather')
+test_df['target'] = 0
 print(train_df.shape)
 print(test_df.shape)
 train_df.tail(100000).to_csv('tmp/train.csv', index=None)
 test_df.head(200).to_csv('tmp/test.csv', index=None)
-
+# statics()
 app_df = pd.read_feather(root / 'app.feather')
 user_df = pd.read_feather(root / 'user.feather')
 
@@ -48,8 +49,8 @@ user_df = pd.read_feather(root / 'user.feather')
 def preprocess(df):
     df["hour"] = df["ts"].dt.hour
     #     df["day"] = df["timestamp"].dt.day
-    df["weekend"] = df["ts"].dt.weekday
-    df["month"] = df["ts"].dt.month
+    # df["weekend"] = df["ts"].dt.weekday
+    # df["month"] = df["ts"].dt.month
     df["dayofweek"] = df["ts"].dt.dayofweek
 
 
@@ -184,6 +185,7 @@ def get_news_fea(df):
     print("get_news_fea....")
     # 视频出现次数
     df['news_count'] = df.groupby('newsid')['id'].transform('count')  #
+    df['news_target_sum'] = df.groupby('newsid')['target'].transform('sum')  # 点击次数
     # 视频推荐的人数
     df['news_guid_unique'] = df.groupby(by='newsid')['guid'].transform('nunique')  # 人数
 
@@ -197,16 +199,54 @@ def get_news_fea(df):
 
     df['news_lng_unique'] = df.groupby(by='newsid')['lng'].transform('nunique')  # 地理
     df['news_lat_unique'] = df.groupby(by='newsid')['lat'].transform('nunique')
+
+    # 时间阶段出现的次数
+    df['news_hour_unique'] = df.groupby(by='newsid')['hour'].transform('nunique')  # 地理
+    df['news_dayofweek_unique'] = df.groupby(by='newsid')['dayofweek'].transform('nunique')
+
+    # 逆向unique
+    df['guid_news_unique'] = df.groupby(by='guid')['newsid'].transform('nunique')  # 人数
+    df['deviceid_news_unique'] = df.groupby(by='deviceid')['newsid'].transform('nunique')  # 设备
+    # df['pos_news_unique'] = df.groupby(by='pos')['newsid'].transform('nunique')
+    # df['app_version_news_unique'] = df.groupby(by='app_version')['newsid'].transform('nunique')
+    df['device_vendor_news_unique'] = df.groupby(by='device_vendor')['newsid'].transform('nunique')
+    # df['netmodel_news_unique'] = df.groupby(by='netmodel')['newsid'].transform('nunique')
+    # df['osversion_news_unique'] = df.groupby(by='osversion')['newsid'].transform('nunique')
+    df['device_version_news_unique'] = df.groupby(by='device_version')['newsid'].transform('nunique')
+    df['lng_news_unique'] = df.groupby(by='lng')['newsid'].transform('nunique')  # 地理
+    df['lat_news_unique'] = df.groupby(by='lat')['newsid'].transform('nunique')
+    # df['hour_news_unique'] = df.groupby(by='hour')['newsid'].transform('nunique')  # 地理
+    # df['dayofweek_news_unique'] = df.groupby(by='dayofweek')['newsid'].transform('nunique')
     return df
 
 
+def get_ctr_fea(df):
+    print("get_ctr_fea....")
+    df['news_ctr_rate'] = df.groupby('newsid')['target'].transform('mean')  #
+    df['lat_ctr_rate'] = df.groupby('lat')['target'].transform('mean')  #
+    df['lng_ctr_rate'] = df.groupby('lng')['target'].transform('mean')  #
+    df['ts_ctr_rate'] = df.groupby('ts')['target'].transform('mean')  #
+    df['deviceid_ctr_rate'] = df.groupby('deviceid')['target'].transform('mean')  #
+    df['guid_ctr_rate'] = df.groupby('guid')['target'].transform('mean')  #
+    df['device_version_ctr_rate'] = df.groupby('device_version')['target'].transform('mean')  #
+    df['device_vendor_ctr_rate'] = df.groupby('device_vendor')['target'].transform('mean')  #
+    df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
+    df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
+    df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
+    df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
+    return df
+
 df = get_news_fea(df)
+df = get_ctr_fea(df)
 
 app_fea = get_app_fea()
 user_fea = get_user_fea()
 
 df = pd.merge(df, app_fea, on='deviceid', how='left')
 df = pd.merge(df, user_fea, on='deviceid', how='left')
+
+del app_fea, user_fea
+gc.collect()
 
 
 def add_lag_feature(data, window=3):
@@ -226,21 +266,23 @@ def add_lag_feature(data, window=3):
     return data
 
 
-# df=add_lag_feature(df)
+df=reduce_mem_usage(df)
 
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp']
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
-df.head(100).to_csv('tmp/df.csv', index=None)
+df.head(200).to_csv('tmp/df.csv', index=None)
 print("df shape", df.shape)
-
-del df
-gc.collect()
 
 print("len(features),features", len(features), features)
 print(train['target'].value_counts())
 print("train shape", train.shape)
 print("test shape", test.shape)
+
+del df
+del train_df
+del test_df
+gc.collect()
 
 
 def load_data():
