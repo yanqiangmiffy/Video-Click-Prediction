@@ -186,7 +186,7 @@ def get_news_fea(df):
     print("get_news_fea....")
     # 视频出现次数
     df['news_count'] = df.groupby('newsid')['id'].transform('count')  #
-    df['news_target_sum'] = df.groupby('newsid')['target'].transform('sum')  # 点击次数
+    # df['news_target_sum'] = df.groupby('newsid')['target'].transform('sum')  # 点击次数
     # 视频推荐的人数
     df['news_guid_unique'] = df.groupby(by='newsid')['guid'].transform('nunique')  # 人数
 
@@ -233,7 +233,7 @@ def get_ctr_fea(df):
     # df['device_vendor_ctr_rate'] = df.groupby('device_vendor')['target'].transform('mean')  #
     # df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
     # df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
-    df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
+    # df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
     # df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
     return df
 
@@ -249,12 +249,14 @@ def get_combination_fea(df):
     df['guid_newsid'] = df['guid'].astype(str) + df['newsid'].astype(str)
     df['pos_newsid'] = df['pos'].astype(str) + df['newsid'].astype(str)
     df['device_vendor_newsid'] = df['device_vendor'].astype(str) + df['newsid'].astype(str)
-    df['lng_newsid'] = df['netmodel'].astype(str) + df['newsid'].astype(str)
+    df['lng_newsid'] = df['lng'].astype(str) + df['newsid'].astype(str)
     df['hour_newsid'] = df['hour'].astype(str) + df['newsid'].astype(str)
     df['dayofweek_newsid'] = df['dayofweek'].astype(str) + df['newsid'].astype(str)
 
     df['dayofweek_hour'] = df['dayofweek'].astype(str) + df['hour'].astype(str)
+
     df['netmodel_hour'] = df['netmodel'].astype(str) + df['hour'].astype(str)
+    df['netmodel_dayofweek'] = df['netmodel'].astype(str) + df['dayofweek'].astype(str)
 
     combination_cols.extend(['deviceid_newsid', 'guid_newsid',
                              'pos_newsid', 'device_vendor_newsid',
@@ -269,7 +271,7 @@ def get_combination_fea(df):
 
 
 df = get_news_fea(df)
-# df = get_ctr_fea(df)
+df = get_ctr_fea(df)
 df = get_combination_fea(df)
 
 app_fea = get_app_fea()
