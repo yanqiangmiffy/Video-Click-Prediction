@@ -38,14 +38,25 @@ train_df['target'] = train_df['target'].astype(int)
 # train_df = shuffle(train_df)
 test_df = pd.read_feather(root / 'test.feather')
 test_df['target'] = 0
-print(train_df.shape)
-print(test_df.shape)
-train_df.tail(100000).to_csv('tmp/train.csv', index=None)
-test_df.head(200).to_csv('tmp/test.csv', index=None)
+
 # statics()
 app_df = pd.read_feather(root / 'app.feather')
 user_df = pd.read_feather(root / 'user.feather')
 
+# 将cate 转为 str
+for col in train_df.columns:
+    if train_df[col].dtype.name=='category':
+        train_df[col] = train_df[col].astype(str)
+for col in test_df.columns:
+    if test_df[col].dtype.name=='category':
+        test_df[col] = test_df[col].astype(str)
+for col in app_df.columns:
+    if app_df[col].dtype.name=='category':
+        app_df[col] = app_df[col].astype(str)
+
+for col in user_df.columns:
+    if user_df[col].dtype.name=='category':
+        user_df[col] = user_df[col].astype(str)
 
 def preprocess(df):
     df["hour"] = df["ts"].dt.hour
@@ -59,12 +70,11 @@ df = pd.concat([train_df, test_df], sort=False, axis=0)
 preprocess(df)
 
 cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] +\
-            ['pos', 'netmodel','osversion']+\
-            ['guid', 'deviceid', 'newsid']
+            ['pos', 'netmodel','osversion']
+
 # df=pd.get_dummies(df,columns=cate_cols)
 for col in cate_cols:
     lb = LabelEncoder()
-    df[col] = df[col].astype(str)
     df[col] = df[col].fillna('999')
     df[col] = lb.fit_transform(df[col])
     df['{}_count'] = df.groupby(col)['id'].transform('count')  #
