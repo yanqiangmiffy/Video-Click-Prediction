@@ -110,7 +110,8 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
         'boosting_type': 'gbdt',
         'objective': 'binary',
         'metric': {'auc'},
-        'verbose': -1
+        'verbose': -1,
+        "nthread": -1
         # 'lambda_l1':0.25,
         # 'lambda_l2':0.5,
         # 'scale_pos_weight':10.0/1.0, #14309.0 / 691.0, #不设置
