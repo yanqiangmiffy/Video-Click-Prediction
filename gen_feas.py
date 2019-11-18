@@ -45,18 +45,19 @@ user_df = pd.read_feather(root / 'user.feather')
 
 # 将cate 转为 str
 for col in train_df.columns:
-    if train_df[col].dtype.name=='category':
+    if train_df[col].dtype.name == 'category':
         train_df[col] = train_df[col].astype(str)
 for col in test_df.columns:
-    if test_df[col].dtype.name=='category':
+    if test_df[col].dtype.name == 'category':
         test_df[col] = test_df[col].astype(str)
 for col in app_df.columns:
-    if app_df[col].dtype.name=='category':
+    if app_df[col].dtype.name == 'category':
         app_df[col] = app_df[col].astype(str)
 
 for col in user_df.columns:
-    if user_df[col].dtype.name=='category':
+    if user_df[col].dtype.name == 'category':
         user_df[col] = user_df[col].astype(str)
+
 
 def preprocess(df):
     df["hour"] = df["ts"].dt.hour
@@ -69,8 +70,8 @@ def preprocess(df):
 df = pd.concat([train_df, test_df], sort=False, axis=0)
 preprocess(df)
 
-cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] +\
-            ['pos', 'netmodel','osversion']
+cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
+            ['pos', 'netmodel', 'osversion']
 
 # df=pd.get_dummies(df,columns=cate_cols)
 for col in cate_cols:
@@ -257,24 +258,26 @@ def get_combination_fea(df):
     """
     print('添加组合特征...')
     combination_cols = []
-    df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['device_vendor_newsid'] =( df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['dayofweek_newsid'] =( df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
-
-    df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
+    # df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['device_vendor_newsid'] =( df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['dayofweek_newsid'] =( df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
+    #
+    # df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
 
     df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
     df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
 
-    combination_cols.extend(['deviceid_newsid', 'guid_newsid',
-                             'pos_newsid', 'device_vendor_newsid',
-                             'lng_newsid', 'hour_newsid',
-                             'dayofweek_newsid', 'dayofweek_hour',
-                             'netmodel_hour','netmodel_dayofweek'])
+    combination_cols.extend([
+        # 'deviceid_newsid', 'guid_newsid',
+        # 'pos_newsid', 'device_vendor_newsid',
+        # 'lng_newsid', 'hour_newsid',
+        # 'dayofweek_newsid', 'dayofweek_hour',
+        'netmodel_hour', 'netmodel_dayofweek'
+    ])
 
     for col in combination_cols:
         print(col)
@@ -310,9 +313,8 @@ def get_tag_fea():
     for tag in top_outertag:
         grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_outertag[tag] if tag in x else 0)
 
-    del top_outertag,all_outertag
+    del top_outertag, all_outertag
     gc.collect()
-
 
     # 最受欢迎的100个tag
     all_tag = {}
@@ -334,10 +336,11 @@ def get_tag_fea():
     for tag in top_tag:
         grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_tag[tag] if tag in x else 0)
 
-    del top_tag,all_tag
+    del top_tag, all_tag
     gc.collect()
 
     return grouped_df
+
 
 df = get_news_fea(df)
 df = get_ctr_fea(df)
@@ -351,8 +354,7 @@ df = pd.merge(df, app_fea, on='deviceid', how='left')
 df = pd.merge(df, user_fea, on='deviceid', how='left')
 df = pd.merge(df, tag_fea, on='deviceid', how='left')
 
-
-del app_fea, user_fea,tag_fea
+del app_fea, user_fea, tag_fea
 gc.collect()
 
 

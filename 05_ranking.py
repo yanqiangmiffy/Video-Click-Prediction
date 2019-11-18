@@ -7,9 +7,9 @@ xgb_prob.sort_values(by='target', inplace=True,ascending=False)
 
 targets = []
 for i in range(len(xgb_prob)):
-    if i <= 292287:
+    # if i <= 292287:
     # if i <= 283651:
-    # if i <= 404392.8:
+    if i <= 504392.8:
         targets.append(1)
     else:
         targets.append(0)
