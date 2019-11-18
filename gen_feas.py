@@ -17,6 +17,7 @@ import gc
 from sklearn.utils import shuffle
 from utils import *
 
+
 # 辅助函数
 def statics():
     stats = []
@@ -236,8 +237,38 @@ def get_ctr_fea(df):
     # df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
     return df
 
+
+def get_combination_fea():
+    """
+    添加组合特征
+    :return:
+    """
+    print('添加组合特征...')
+    combination_cols = []
+    df['deviceid_newsid'] = df['deviceid'].astype(str) + df['newsid'].astype(str)
+    df['guid_newsid'] = df['dist56'].astype(str) + df['newsid'].astype(str)
+    df['pos_newsid'] = df['pos'].astype(str) + df['newsid'].astype(str)
+    df['device_vendor_newsid'] = df['device_vendor'].astype(str) + df['newsid'].astype(str)
+    df['lng_newsid'] = df['netmodel'].astype(str) + df['newsid'].astype(str)
+    df['hour_newsid'] = df['hour'].astype(str) + df['newsid'].astype(str)
+    df['dayofweek_newsid'] = df['dayofweek'].astype(str) + df['newsid'].astype(str)
+
+    df['dayofweek_hour'] = df['dayofweek'].astype(str) + df['hour'].astype(str)
+    df['netmodel_hour'] = df['netmodel'].astype(str) + df['hour'].astype(str)
+
+    combination_cols.extend(['deviceid_newsid', 'guid_newsid',
+                             'pos_newsid', 'device_vendor_newsid',
+                             'lng_newsid', 'hour_newsid',
+                             'dayofweek_newsid', 'dayofweek_hour',
+                             'netmodel_hour'])
+
+    for col in combination_cols:
+        df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
+        df.drop(columns=[col], inplace=True)
+    return df
+
 df = get_news_fea(df)
-df = get_ctr_fea(df)
+# df = get_ctr_fea(df)
 
 app_fea = get_app_fea()
 user_fea = get_user_fea()
@@ -266,7 +297,7 @@ def add_lag_feature(data, window=3):
     return data
 
 
-df=reduce_mem_usage(df)
+df = reduce_mem_usage(df)
 
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp']
 features = [fea for fea in df.columns if fea not in no_features]

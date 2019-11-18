@@ -67,6 +67,7 @@ fea_importance_df=pd.DataFrame({
     'features':features,
     'importance':fea_importances
 })
+fea_importance_df.to_csv('tmp/fea_importance.csv',index=None)
 
 plt.figure(figsize=(14, 30))
 sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))
