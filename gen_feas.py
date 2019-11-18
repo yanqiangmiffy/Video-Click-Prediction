@@ -278,7 +278,7 @@ def get_combination_fea(df):
 
     for col in combination_cols:
         df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
-        df.drop(columns=[col], inplace=True)
+    df.drop(columns=combination_cols, inplace=True)
     return df
 
 
