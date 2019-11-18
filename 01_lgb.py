@@ -138,6 +138,8 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
     auc_cv.append(tmp_auc)
     print("auc_score", tmp_auc)
 
+    mail(str(k)+"lgb cpu 训练完成，cv auc-score:{}".format(tmp_auc))
+
     # test
     y_pred_all_l1 += gbm.predict(test_data, num_iteration=gbm.best_iteration)
 

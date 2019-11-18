@@ -10,7 +10,7 @@ from gen_feas import load_data
 import matplotlib.pyplot as plt
 import seaborn as sns
 import gc
-
+from utils import *
 
 train, test, no_featuress, features = load_data()
 sample_submission = pd.read_feather('data/sample_submission.feather')
@@ -42,12 +42,15 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
             eval_set=[(X_valid, y_valid)],
             eval_metric=['logloss', 'auc'],
             verbose=True,
-            early_stopping_rounds=500)
+            early_stopping_rounds=100)
     valid_pred = bst.predict(X_valid)
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
-    print("f1-score:",f1_score(y_valid, valid_pred))
+    print("f1-score:", f1_score(y_valid, valid_pred))
     y_pred_all_l1 += bst.predict_proba(test[features])[:, 1]
     y_scores += bst.best_score
+
+    # 训练完成 发送邮件
+    mail(str(i)+"xgb cpu 训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
 
     fea_importances += bst.feature_importances_
     del bst
@@ -62,15 +65,16 @@ sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
 print(sample_submission['target'].value_counts())
 sample_submission.to_csv('result/xgb_result.csv', index=False)
 
-
-fea_importance_df=pd.DataFrame({
-    'features':features,
-    'importance':fea_importances
+fea_importance_df = pd.DataFrame({
+    'features': features,
+    'importance': fea_importances
 })
+fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/fea_importance.csv', index=None)
 
 plt.figure(figsize=(14, 30))
 sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))
 plt.title('Features importance (averaged/folds)')
 plt.tight_layout()
 plt.show()
+
 
