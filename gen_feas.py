@@ -58,14 +58,16 @@ def preprocess(df):
 df = pd.concat([train_df, test_df], sort=False, axis=0)
 preprocess(df)
 
-cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + ['pos', 'netmodel',
-                                                                                           'osversion']
+cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] +\
+            ['pos', 'netmodel','osversion']+\
+            ['guid', 'deviceid', 'newsid']
 # df=pd.get_dummies(df,columns=cate_cols)
 for col in cate_cols:
     lb = LabelEncoder()
     df[col] = df[col].astype(str)
     df[col] = df[col].fillna('999')
     df[col] = lb.fit_transform(df[col])
+    df['{}_count'] = df.groupby(col)['id'].transform('count')  #
 
 
 def get_app_fea():
@@ -262,12 +264,13 @@ def get_combination_fea(df):
                              'pos_newsid', 'device_vendor_newsid',
                              'lng_newsid', 'hour_newsid',
                              'dayofweek_newsid', 'dayofweek_hour',
-                             'netmodel_hour'])
+                             'netmodel_hour','netmodel_dayofweek'])
 
     for col in combination_cols:
         df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
         df.drop(columns=[col], inplace=True)
     return df
+
 
 
 df = get_news_fea(df)
