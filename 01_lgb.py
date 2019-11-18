@@ -94,7 +94,7 @@ start = time.time()
 N = 5
 skf = StratifiedKFold(n_splits=N, shuffle=True, random_state=2018)
 
-f1_cv = []
+auc_cv = []
 y_pred_all_l1 = np.zeros(test.shape[0])
 
 for k, (train_in, test_in) in enumerate(skf.split(X, y)):
@@ -124,7 +124,7 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
                     num_boost_round=2000,
                     valid_sets=(lgb_train, lgb_eval),
                     early_stopping_rounds=100,
-                    verbose_eval=100,
+                    verbose_eval=500,
                     feval=evalerror,
                     feature_name=features,
 
@@ -134,9 +134,9 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
     # 预测
     y_pred = gbm.predict(X_valid, num_iteration=gbm.best_iteration)
     # 评估
-    tmp_f1 = f1_score(y_valid, y_pred)
-    f1_cv.append(tmp_f1)
-    print("f1_score", tmp_f1)
+    tmp_auc = roc_auc_score(y_valid, y_pred)
+    auc_cv.append(tmp_auc)
+    print("f1_score", tmp_auc)
 
     # test
     y_pred_all_l1 += gbm.predict(test_data, num_iteration=gbm.best_iteration)
@@ -146,7 +146,7 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
 
 # K交叉验证的平均分数
 print('the cv information:')
-print('cv f1 mean score', np.mean(f1_cv))
+print('cv f1 mean score', np.mean(auc_cv))
 
 end = time.time()
 print("......................run with time: ", (end - start) / 60.0)
