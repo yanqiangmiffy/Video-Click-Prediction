@@ -49,6 +49,9 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     y_pred_all_l1 += bst.predict_proba(test[features])[:, 1]
     y_scores += bst.best_score
 
+    # 训练完成 发送邮件
+    mail(str(i)+"训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
+
     fea_importances += bst.feature_importances_
     del bst
     del valid_pred
@@ -74,5 +77,4 @@ plt.title('Features importance (averaged/folds)')
 plt.tight_layout()
 plt.show()
 
-# 训练完成 发送邮件
-mail("训练完成，cv f1-score:{}".format(y_scores/n_fold))
+
