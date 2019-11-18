@@ -284,6 +284,59 @@ def get_combination_fea(df):
     return df
 
 
+def get_tag_fea():
+    user_df['outertag'] = user_df['outertag'].astype(str)
+    grouped_df = user_df.groupby('deviceid').agg({'outertag': '|'.join})
+    grouped_df.columns = ['deviceid_' + 'outertag']
+
+    # 最受欢迎的50个outertag
+    all_outertag = {}
+    for x in user_df.outertag.astype(str):
+        tags = x.split('|')
+        if tags[0] != 'nan':
+            for tag in tags:
+                tmp = tag.split(':')
+                if len(tmp) == 2:
+                    if tmp[0] in all_outertag:
+                        all_outertag[tmp[0]] += float(tmp[1])
+                    else:
+                        all_outertag[tmp[0]] = 0
+                        all_outertag[tmp[0]] += float(tmp[1])
+    top_outertag = {}
+    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:50]:
+        top_outertag[tag] = score
+
+    for tag in top_outertag:
+        grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_outertag[tag] if tag in x else 0)
+
+    del top_outertag,all_outertag
+    gc.collect()
+
+
+    # 最受欢迎的100个tag
+    all_tag = {}
+    for x in user_df.tag.astype(str):
+        tags = x.split('|')
+        if tags[0] != 'nan':
+            for tag in tags:
+                tmp = tag.split(':')
+                if len(tmp) == 2:
+                    if tmp[0] in all_tag:
+                        all_tag[tmp[0]] += float(tmp[1])
+                    else:
+                        all_tag[tmp[0]] = 0
+                        all_tag[tmp[0]] += float(tmp[1])
+    top_tag = {}
+    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:100]:
+        top_tag[tag] = score
+
+    for tag in top_tag:
+        grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_tag[tag] if tag in x else 0)
+
+    del top_tag,all_tag
+    gc.collect()
+
+    return grouped_df
 
 df = get_news_fea(df)
 df = get_ctr_fea(df)
