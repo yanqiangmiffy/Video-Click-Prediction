@@ -330,12 +330,12 @@ def get_tag_fea():
                         all_tag[tmp[0]] = 0
                         all_tag[tmp[0]] += float(tmp[1])
     top_tag = {}
-    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:20]:
+    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:40]:
         top_tag[tag] = score
 
     for tag in top_tag:
         grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_tag[tag] if tag in x else 0)
-
+    del grouped_df['deviceid_outertag']
     del top_tag, all_tag
     gc.collect()
 
