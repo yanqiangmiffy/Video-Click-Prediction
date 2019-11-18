@@ -285,6 +285,7 @@ def get_combination_fea(df):
 
 
 def get_tag_fea():
+    print("get_tag_fea....")
     user_df['outertag'] = user_df['outertag'].astype(str)
     grouped_df = user_df.groupby('deviceid').agg({'outertag': '|'.join})
     grouped_df.columns = ['deviceid_' + 'outertag']
@@ -344,12 +345,14 @@ df = get_combination_fea(df)
 
 app_fea = get_app_fea()
 user_fea = get_user_fea()
+tag_fea = get_tag_fea()
 
 df = pd.merge(df, app_fea, on='deviceid', how='left')
 df = pd.merge(df, user_fea, on='deviceid', how='left')
+df = pd.merge(df, tag_fea, on='deviceid', how='left')
 
 
-del app_fea, user_fea
+del app_fea, user_fea,tag_fea
 gc.collect()
 
 
