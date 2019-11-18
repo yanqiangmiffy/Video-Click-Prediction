@@ -142,8 +142,8 @@ def get_user_fea():
                     score += 0
         return score
 
-    user_df['outertag_nums'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_nums(x))
-    user_df['outertag_score'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_score(x))
+    # user_df['outertag_nums'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_nums(x))
+    # user_df['outertag_score'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_score(x))
 
     user_df['tag_nums'] = user_df['tag'].astype('str').apply(lambda x: get_outertag_nums(x))
     user_df['tag_score'] = user_df['tag'].astype('str').apply(lambda x: get_outertag_score(x))
@@ -153,43 +153,43 @@ def get_user_fea():
     grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    grouped_df = user_df.groupby(by='deviceid').agg({'outertag_score': ['sum', 'median', 'mean']})
-    grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
-    grouped_df.reset_index()
-    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    # grouped_df = user_df.groupby(by='deviceid').agg({'outertag_score': ['sum', 'median', 'mean']})
+    # grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+    # grouped_df.reset_index()
+    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
     grouped_df = user_df.groupby(by='deviceid').agg({'tag_nums': ['sum', 'median', 'mean']})
     grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
     grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    grouped_df = user_df.groupby(by='deviceid').agg({'tag_score': ['sum', 'median', 'mean']})
-    grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
-    grouped_df.reset_index()
-    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    # grouped_df = user_df.groupby(by='deviceid').agg({'tag_score': ['sum', 'median', 'mean']})
+    # grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+    # grouped_df.reset_index()
+    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
     # 设备的用户等级统计
-    grouped_df = user_df.groupby(by='deviceid').agg({'level': ['sum']})
-    grouped_df.columns = ['deviceid_level_sum']
-    grouped_df.reset_index()
-    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    # grouped_df = user_df.groupby(by='deviceid').agg({'level': ['sum']})
+    # grouped_df.columns = ['deviceid_level_sum']
+    # grouped_df.reset_index()
+    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
     # 设备的用户劣质统计
     # 1表示劣质用户 0表示正常用户。
-    grouped_df = user_df.groupby(by='deviceid').agg({'personidentification': ['sum']})
-    grouped_df.columns = ['deviceid_personidentification_sum']
-    grouped_df.reset_index()
-    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    # grouped_df = user_df.groupby(by='deviceid').agg({'personidentification': ['sum']})
+    # grouped_df.columns = ['deviceid_personidentification_sum']
+    # grouped_df.reset_index()
+    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    grouped_df = user_df.groupby(by='deviceid').agg({'personalscore': ['sum']})
-    grouped_df.columns = ['deviceid_personalscore_sum']
-    grouped_df.reset_index()
-    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    # grouped_df = user_df.groupby(by='deviceid').agg({'personalscore': ['sum']})
+    # grouped_df.columns = ['deviceid_personalscore_sum']
+    # grouped_df.reset_index()
+    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    grouped_df = user_df.groupby(by='deviceid').agg({'followscore': ['sum']})
-    grouped_df.columns = ['deviceid_followscore_sum']
-    grouped_df.reset_index()
-    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    # grouped_df = user_df.groupby(by='deviceid').agg({'followscore': ['sum']})
+    # grouped_df.columns = ['deviceid_followscore_sum']
+    # grouped_df.reset_index()
+    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
     return user_grouped_df
 
