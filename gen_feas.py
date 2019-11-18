@@ -246,7 +246,7 @@ def get_combination_fea(df):
     print('添加组合特征...')
     combination_cols = []
     df['deviceid_newsid'] = df['deviceid'].astype(str) + df['newsid'].astype(str)
-    df['guid_newsid'] = df['dist56'].astype(str) + df['newsid'].astype(str)
+    df['guid_newsid'] = df['guid'].astype(str) + df['newsid'].astype(str)
     df['pos_newsid'] = df['pos'].astype(str) + df['newsid'].astype(str)
     df['device_vendor_newsid'] = df['device_vendor'].astype(str) + df['newsid'].astype(str)
     df['lng_newsid'] = df['netmodel'].astype(str) + df['newsid'].astype(str)
