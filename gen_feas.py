@@ -223,17 +223,17 @@ def get_news_fea(df):
 def get_ctr_fea(df):
     print("get_ctr_fea....")
     df['news_ctr_rate'] = df.groupby('newsid')['target'].transform('mean')  #
-    df['lat_ctr_rate'] = df.groupby('lat')['target'].transform('mean')  #
-    df['lng_ctr_rate'] = df.groupby('lng')['target'].transform('mean')  #
-    df['ts_ctr_rate'] = df.groupby('ts')['target'].transform('mean')  #
-    df['deviceid_ctr_rate'] = df.groupby('deviceid')['target'].transform('mean')  #
-    df['guid_ctr_rate'] = df.groupby('guid')['target'].transform('mean')  #
-    df['device_version_ctr_rate'] = df.groupby('device_version')['target'].transform('mean')  #
-    df['device_vendor_ctr_rate'] = df.groupby('device_vendor')['target'].transform('mean')  #
-    df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
-    df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
+    # df['lat_ctr_rate'] = df.groupby('lat')['target'].transform('mean')  #
+    # df['lng_ctr_rate'] = df.groupby('lng')['target'].transform('mean')  #
+    # df['ts_ctr_rate'] = df.groupby('ts')['target'].transform('mean')  #
+    # df['deviceid_ctr_rate'] = df.groupby('deviceid')['target'].transform('mean')  #
+    # df['guid_ctr_rate'] = df.groupby('guid')['target'].transform('mean')  #
+    # df['device_version_ctr_rate'] = df.groupby('device_version')['target'].transform('mean')  #
+    # df['device_vendor_ctr_rate'] = df.groupby('device_vendor')['target'].transform('mean')  #
+    # df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
+    # df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
     df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
-    df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
+    # df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
     return df
 
 df = get_news_fea(df)
