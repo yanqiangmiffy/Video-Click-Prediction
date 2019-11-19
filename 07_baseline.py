@@ -33,6 +33,11 @@ warnings.filterwarnings('ignore')
 train = pd.read_csv("data/train.csv")
 test = pd.read_csv("data/test.csv")
 data = train.append(test).reset_index(drop=True)
+def get_time_str(x):
+    dateArray = datetime.datetime.utcfromtimestamp(x)
+    otherStyleTime = dateArray.strftime('%Y-%m-%d %H:%M:%S')
+    return otherStyleTime
+data['ts'] = data['ts'].apply(lambda x:get_time_str(x/1000))
 def preprocess(df):
     df["hour"] = df["ts"].dt.hour
     #     df["day"] = df["timestamp"].dt.day
