@@ -28,7 +28,7 @@ train[label] = train[label].astype(int)
 print(train[label])
 
 
-def pred(X_test, model, batch_size=10000):
+def pred(X_test, model, batch_size=100000):
     iterations = (X_test.shape[0] + batch_size - 1) // batch_size
     print('iterations', iterations)
 
