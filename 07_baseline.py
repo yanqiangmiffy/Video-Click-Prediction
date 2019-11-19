@@ -33,7 +33,13 @@ warnings.filterwarnings('ignore')
 train = pd.read_csv("data/train.csv")
 test = pd.read_csv("data/test.csv")
 data = train.append(test).reset_index(drop=True)
-
+def preprocess(df):
+    df["hour"] = df["ts"].dt.hour
+    #     df["day"] = df["timestamp"].dt.day
+    # df["weekend"] = df["ts"].dt.weekday
+    # df["month"] = df["ts"].dt.month
+    df["dayofweek"] = df["ts"].dt.dayofweek
+preprocess(data)
 def get_combination_fea(df):
     """
     添加组合特征
