@@ -247,7 +247,7 @@ def get_ctr_fea(df):
     # df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
     # df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
     # df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
-    # df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
+    df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
     return df
 
 
@@ -343,7 +343,7 @@ def get_tag_fea():
 
 
 df = get_news_fea(df)
-# df = get_ctr_fea(df)
+df = get_ctr_fea(df)
 df = get_combination_fea(df)
 
 app_fea = get_app_fea()
