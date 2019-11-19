@@ -175,7 +175,7 @@ object_col = [i for i in data.select_dtypes(object).columns if i not in ['id']]
 for i in tqdm(object_col):
     data[i] = lbl.fit_transform(data[i].astype(str))
 
-feature_name = [i for i in data.columns if i not in ['id', 'target', 'ID', 'fold', 'timestamp']]
+feature_name = [i for i in data.columns if i not in ['id', 'target', 'ts','ID', 'fold', 'timestamp']]
 tr_index = ~data['target'].isnull()
 X_train = data[tr_index].reset_index(drop=True)[feature_name].reset_index(drop=True)
 y = data[tr_index]['target'].reset_index(drop=True)
