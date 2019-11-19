@@ -71,10 +71,10 @@ fea_importance_df = pd.DataFrame({
 })
 fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/fea_importance.csv', index=None)
 
-plt.figure(figsize=(14, 30))
-sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))
-plt.title('Features importance (averaged/folds)')
-plt.tight_layout()
-plt.show()
+# plt.figure(figsize=(14, 30))
+# sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))
+# plt.title('Features importance (averaged/folds)')
+# plt.tight_layout()
+# plt.show()
 
 
