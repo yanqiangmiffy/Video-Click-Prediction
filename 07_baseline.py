@@ -31,8 +31,8 @@ import datetime
 
 warnings.filterwarnings('ignore')
 
-train = pd.read_csv("data/train.csv")
-test = pd.read_csv("data/test.csv")
+train = pd.read_csv("data/train.csv")[:10000]
+test = pd.read_csv("data/test.csv")[:10000]
 data = train.append(test).reset_index(drop=True)
 def get_time_str(x):
     dateArray = datetime.datetime.utcfromtimestamp(x)
@@ -222,7 +222,7 @@ for model_seed in range(num_model_seed):
         lgb_valid = lgb.Dataset(test_x, test_y, reference=lgb_train)
         lgb_model = lgb.train(lgb_param, lgb_train, num_boost_round=40000, valid_sets=[lgb_valid],
                               valid_names=['valid'], early_stopping_rounds=50, feval=eval_func,
-                              feature_name='auto',
+                              feature_name=None,
                               verbose_eval=10)
 
         oof_lgb[test_index] += lgb_model.predict(test_x)
