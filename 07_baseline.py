@@ -27,6 +27,7 @@ from gensim.models import Word2Vec
 from gensim.models.word2vec import LineSentence
 import warnings
 import os
+import datetime
 
 warnings.filterwarnings('ignore')
 
@@ -38,6 +39,7 @@ def get_time_str(x):
     otherStyleTime = dateArray.strftime('%Y-%m-%d %H:%M:%S')
     return otherStyleTime
 data['ts'] = data['ts'].apply(lambda x:get_time_str(x/1000))
+
 def preprocess(df):
     df["hour"] = df["ts"].dt.hour
     #     df["day"] = df["timestamp"].dt.day
