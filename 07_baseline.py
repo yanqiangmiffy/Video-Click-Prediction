@@ -228,6 +228,10 @@ for model_seed in range(num_model_seed):
         oof_lgb[test_index] += lgb_model.predict(test_x)
         prediction_lgb += lgb_model.predict(X_test[feature_name]) / 5
 
+        del lgb_model
+        del train_x, test_x, train_y, test_y
+        del lgb_train,lgb_valid
+
     print('AUC', roc_auc_score(y, oof_lgb))
     print(prediction_lgb.mean())
     oof += oof_lgb / num_model_seed
