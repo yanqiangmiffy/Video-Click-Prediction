@@ -39,6 +39,7 @@ def get_time_str(x):
     otherStyleTime = dateArray.strftime('%Y-%m-%d %H:%M:%S')
     return otherStyleTime
 data['ts'] = data['ts'].apply(lambda x:get_time_str(x/1000))
+data['ts'] = pd.to_datetime(data['ts'])
 
 def preprocess(df):
     df["hour"] = df["ts"].dt.hour
