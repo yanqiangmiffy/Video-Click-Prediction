@@ -31,8 +31,8 @@ import datetime
 
 warnings.filterwarnings('ignore')
 
-train = pd.read_csv("data/train.csv")
-test = pd.read_csv("data/test.csv")
+train = pd.read_csv("data/train.csv")[:10000]
+test = pd.read_csv("data/test.csv")[:10000]
 data = train.append(test).reset_index(drop=True)
 def get_time_str(x):
     dateArray = datetime.datetime.utcfromtimestamp(x)
@@ -177,9 +177,9 @@ for i in tqdm(object_col):
 
 feature_name = [i for i in data.columns if i not in ['id', 'target', 'ts','ID', 'fold', 'timestamp']]
 tr_index = ~data['target'].isnull()
-X_train = data[tr_index].reset_index(drop=True)[feature_name].reset_index(drop=True)
-y = data[tr_index]['target'].reset_index(drop=True)
-X_test = data.loc[data['id'].isin(test['id'].unique())][feature_name].reset_index(drop=True)
+X_train = data[tr_index].reset_index(drop=True)[feature_name].reset_index(drop=True).values
+y = data[tr_index]['target'].reset_index(drop=True).values
+X_test = data.loc[data['id'].isin(test['id'].unique())][feature_name].reset_index(drop=True).values
 
 lgb_param = {
     'learning_rate': 0.1,
@@ -216,13 +216,12 @@ for model_seed in range(num_model_seed):
     skf = StratifiedKFold(n_splits=5, random_state=seeds[model_seed], shuffle=False)
     for index, (train_index, test_index) in enumerate(skf.split(X_train, y)):
         print(index)
-        train_x, test_x, train_y, test_y = X_train.iloc[train_index], X_train.iloc[test_index], y.iloc[train_index], \
-                                           y.iloc[test_index]
+        train_x, test_x, train_y, test_y = X_train[train_index], X_train[test_index], y[train_index], \
+                                           y[test_index]
         lgb_train = lgb.Dataset(train_x, train_y)
         lgb_valid = lgb.Dataset(test_x, test_y, reference=lgb_train)
         lgb_model = lgb.train(lgb_param, lgb_train, num_boost_round=40000, valid_sets=[lgb_valid],
                               valid_names=['valid'], early_stopping_rounds=50, feval=eval_func,
-                              feature_name=None,
                               verbose_eval=10)
 
         oof_lgb[test_index] += lgb_model.predict(test_x)
