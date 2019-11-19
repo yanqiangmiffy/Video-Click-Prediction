@@ -222,7 +222,7 @@ for model_seed in range(num_model_seed):
         lgb_valid = lgb.Dataset(test_x, test_y, reference=lgb_train)
         lgb_model = lgb.train(lgb_param, lgb_train, num_boost_round=40000, valid_sets=[lgb_valid],
                               valid_names=['valid'], early_stopping_rounds=50, feval=eval_func,
-                              # categorical_feature=cate_feat
+                              feature_name='auto',
                               verbose_eval=10)
 
         oof_lgb[test_index] += lgb_model.predict(test_x)
