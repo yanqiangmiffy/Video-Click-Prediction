@@ -31,8 +31,8 @@ import datetime
 
 warnings.filterwarnings('ignore')
 
-train = pd.read_csv("data/train.csv")[:10000]
-test = pd.read_csv("data/test.csv")[:10000]
+train = pd.read_csv("data/train.csv")
+test = pd.read_csv("data/test.csv")
 data = train.append(test).reset_index(drop=True)
 def get_time_str(x):
     dateArray = datetime.datetime.utcfromtimestamp(x)
