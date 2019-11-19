@@ -193,9 +193,9 @@ lgb_param = {
     'verbose': -1,
     'max_depth': -1,
     'seed': 2019,
-    'n_jobs': 20,
-    'device': 'gpu',
-    'gpu_device_id': 0,
+    'n_jobs': -1,
+    # 'device': 'gpu',
+    # 'gpu_device_id': 0,
 }
 
 
