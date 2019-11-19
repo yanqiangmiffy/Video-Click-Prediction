@@ -115,7 +115,7 @@ r_c = sorted(r, reverse=True)
 cut = r_c[400000]
 
 sub['target'] = sub['target'].apply(lambda x: 0 if x <= cut else 1)
-sub[['id', 'target']].to_csv('../result/submission_lgb.csv', index=None)
+sub[['id', 'target']].to_csv('submission_lgb.csv', index=None)
 print(sub['target'].value_counts())
 
 
