@@ -225,7 +225,7 @@ for model_seed in range(num_model_seed):
                               verbose_eval=10)
 
         oof_lgb[test_index] += lgb_model.predict(test_x)
-        prediction_lgb += lgb_model.predict(X_test[feature_name]) / 5
+        prediction_lgb += lgb_model.predict(X_test) / 5
 
         del lgb_model
         del train_x, test_x, train_y, test_y
