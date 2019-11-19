@@ -205,7 +205,7 @@ def eval_func(y_pred, train_data):
     return 'f1', score, True
 
 
-print(X_train.shape, X_test[feature_name].shape)
+# print(X_train.shape, X_test[feature_name].shape)
 oof = np.zeros(X_train.shape[0])
 prediction = np.zeros(X_test.shape[0])
 seeds = [19970412, 1, 4096, 2048, 1024]
