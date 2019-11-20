@@ -18,6 +18,10 @@ import datetime
 from sklearn.utils import shuffle
 from utils import *
 
+import time
+
+start_time = time.time()
+
 
 # 辅助函数
 def statics():
@@ -266,18 +270,18 @@ def get_combination_fea(df):
     """
     print('添加组合特征...')
     combination_cols = []
-    df['deviceid_newsid'] = (df['deviceid'] + df['newsid']).astype('category')
-    df['guid_newsid'] = (df['guid'] + df['newsid']).astype('category')
-    df['pos_newsid'] = (df['pos'] + df['newsid']).astype('category')
-    df['device_vendor_newsid'] =( df['device_vendor'] + df['newsid']).astype('category')
-    df['lng_newsid'] = (df['lng'] + df['newsid']).astype('category')
-    df['hour_newsid'] = (df['hour'] + df['newsid']).astype('category')
-    df['dayofweek_newsid'] =( df['dayofweek'] + df['newsid']).astype('category')
+    df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
 
-    df['dayofweek_hour'] = (df['dayofweek'] + df['hour']).astype('category')
+    df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
 
-    df['netmodel_hour'] = (df['netmodel'] + df['hour']).astype('category')
-    df['netmodel_dayofweek'] = (df['netmodel'] + df['dayofweek']).astype('category')
+    df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+    df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
 
     combination_cols.extend([
         'deviceid_newsid', 'guid_newsid',
@@ -390,7 +394,6 @@ df = pd.merge(df, user_fea, on='deviceid', how='left')
 del user_fea
 gc.collect()
 
-
 outertag_fea = get_outertag_fea()
 df = pd.merge(df, outertag_fea, on='deviceid', how='left')
 del outertag_fea
@@ -417,6 +420,9 @@ del df
 del train_df
 del test_df
 gc.collect()
+
+end_time = time.time()
+print("生成特征耗时：", end_time - start_time)
 
 
 def load_data():
