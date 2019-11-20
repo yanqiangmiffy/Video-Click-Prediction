@@ -75,6 +75,12 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     del valid_pred
     gc.collect()
 
+fea_importance_df = pd.DataFrame({
+    'features': features,
+    'importance': fea_importances
+})
+fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/lgb_fea_importance.csv', index=None)
+
 r = y_pred_all_l1 / n_fold
 sample_submission['target'] = r
 sample_submission.to_csv('result/lgb_prob.csv', index=False, sep=",")
@@ -83,11 +89,7 @@ sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
 print(sample_submission['target'].value_counts())
 sample_submission.to_csv('result/lgb_result.csv', index=False)
 
-fea_importance_df = pd.DataFrame({
-    'features': features,
-    'importance': fea_importances
-})
-fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/lgb_fea_importance.csv', index=None)
+
 
 # plt.figure(figsize=(14, 30))
 # sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))
