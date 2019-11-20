@@ -12,6 +12,7 @@ import seaborn as sns
 import gc
 from utils import *
 from tqdm import tqdm
+import types
 
 train, test, no_featuress, features = load_data()
 sample_submission = pd.read_feather('data/sample_submission.feather')
@@ -57,6 +58,9 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                              bagging_freq=5,
                              seed=2019,
                              )
+
+    bst.booster_._feature_names = features
+    bst.booster_.feature_name = types.MethodType(lambda self: self._feature_names, bst.booster_)
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
             eval_metric=['logloss', 'auc'],
