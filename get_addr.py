@@ -46,7 +46,7 @@ if __name__ == '__main__':
     address = list(set(address))
     print(address[:10])
     with open('tmp/address.csv', 'a', encoding='utf-8') as f:
-        for i in tqdm(range(len(address))):
+        for i in range(len(address)):
             print(i)
             index = address[i]
             lat = str(index[0])
