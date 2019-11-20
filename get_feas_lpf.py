@@ -25,6 +25,7 @@ scaler = StandardScaler()
 def get_fea(train, test, user, app):
     # test['target'] = 'test'
 
+
     user['mark'] = 0
     user['deviceid_count'] = user.groupby('deviceid').mark.transform('count')
     user['guid_count'] = user.groupby('guid').mark.transform('count')
