@@ -48,33 +48,33 @@ def preprocess(df):
     # df["month"] = df["ts"].dt.month
     df["dayofweek"] = df["ts"].dt.dayofweek
 preprocess(data)
-def get_combination_fea(df):
-    """
-    添加组合特征
-    :return:
-    """
-    print('添加组合特征...')
-    combination_cols = []
-    df['netmodel_device_vendor'] =( df['netmodel'].astype(str) + df['device_vendor'].astype(str)).astype('category')
-    df['netmodel_pos'] = (df['netmodel'].astype(str) + df['pos'].astype(str)).astype('category')
-    df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
-    df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
-    df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
-
-    combination_cols.extend([
-        # 'deviceid_newsid', 'guid_newsid',
-        # 'pos_newsid', 'device_vendor_newsid',
-        'netmodel_device_vendor',
-        'netmodel_pos', 'dayofweek_hour',
-        'netmodel_hour', 'netmodel_dayofweek'
-    ])
-
-    for col in combination_cols:
-        print(col)
-        df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
-        del df[col]
-        gc.collect()
-    return df
+# def get_combination_fea(df):
+#     """
+#     添加组合特征
+#     :return:
+#     """
+#     print('添加组合特征...')
+#     combination_cols = []
+#     df['netmodel_device_vendor'] =( df['netmodel'].astype(str) + df['device_vendor'].astype(str)).astype('category')
+#     df['netmodel_pos'] = (df['netmodel'].astype(str) + df['pos'].astype(str)).astype('category')
+#     df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
+#     df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+#     df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
+#
+#     combination_cols.extend([
+#         # 'deviceid_newsid', 'guid_newsid',
+#         # 'pos_newsid', 'device_vendor_newsid',
+#         'netmodel_device_vendor',
+#         'netmodel_pos', 'dayofweek_hour',
+#         'netmodel_hour', 'netmodel_dayofweek'
+#     ])
+#
+#     for col in combination_cols:
+#         print(col)
+#         df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
+#         del df[col]
+#         gc.collect()
+#     return df
 
 
 # 提取app个数特征
@@ -85,7 +85,7 @@ app = app.groupby('deviceid')['applist'].apply(lambda x: '|'.join(x)).reset_inde
 app['app_len'] = app['applist'].apply(lambda x: len(x.split('|')))
 data = data.merge(app[['deviceid', 'app_len']], how='left', on='deviceid')
 
-data=get_combination_fea(data)
+# data=get_combination_fea(data)
 
 del app
 

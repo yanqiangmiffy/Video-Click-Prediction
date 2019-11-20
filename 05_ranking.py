@@ -1,6 +1,7 @@
 import pandas as pd
 
-xgb_prob = pd.read_csv('result/xgb_prob.csv')
+xgb_prob = pd.read_csv('result/lgb_prob')[['id','target']]
+print(xgb_prob)
 
 xgb_prob['key']=[i for i in range(len(xgb_prob))]
 xgb_prob.sort_values(by='target', inplace=True,ascending=False)

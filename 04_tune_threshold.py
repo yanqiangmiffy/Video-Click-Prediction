@@ -16,7 +16,8 @@ if __name__ == '__main__':
 
     print(args.threshold)
     threshold=float(args.threshold)
-    xgb_prob=pd.read_csv('result/xgb_prob.csv')
+    # xgb_prob=pd.read_csv('result/xgb_prob.csv')
+    xgb_prob = pd.read_csv('result/lgb_prob')[['id', 'target']]
 
     # threshold=0.45
     xgb_prob['target'] = xgb_prob['target'].apply(lambda x:1 if x>threshold else 0)
