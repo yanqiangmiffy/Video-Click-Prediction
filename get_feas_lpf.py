@@ -46,6 +46,11 @@ def get_fea(train, test, user, app):
 
     user['tag_same'] = user.apply(lambda x: get_same_tag(x['outertag'], x['tag']), axis=1)
 
+    app['applist'] = app['applist'].apply(lambda x: str(x)[1:-2])
+    app['applist'] = app['applist'].apply(lambda x: str(x).replace(' ', '|'))
+    app = app.groupby('deviceid')['applist'].apply(lambda x: '|'.join(x)).reset_index()
+    app['app_len'] = app['applist'].apply(lambda x: len(x.split('|')))
+
     df = pd.concat((train, test))
     user_duplicate = user.drop_duplicates(subset=['deviceid', 'guid'])
     app_duplicate = app.drop_duplicates(subset=['deviceid'])
@@ -57,7 +62,26 @@ def get_fea(train, test, user, app):
     df['ts_day'] = df['ts'].apply(lambda x: x.day)
     df['ts_hour'] = df['ts'].apply(lambda x: x.hour)
 
-    no_features = ['id', 'target', 'timestamp']
+    # 类别特征count特征
+    cat_list = [i for i in train.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
+    for i in tqdm(cat_list):
+        df['{}_count'.format(i)] = df.groupby(['{}'.format(i)])['id'].transform('count')
+
+    # 类别特征五折转化率特征
+    df['ID'] = df.index
+    df['fold'] = df['ID'] % 5
+    df.loc[df.target.isnull(), 'fold'] = 5
+    target_feat = []
+    for i in tqdm(cat_list):
+        target_feat.extend([i + '_mean_last_1'])
+        df[i + '_mean_last_1'] = None
+        for fold in range(6):
+            df.loc[df['fold'] == fold, i + '_mean_last_1'] = df[df['fold'] == fold][i].map(
+                df[(df['fold'] != fold) & (df['fold'] != 5)].groupby(i)['target'].mean()
+            )
+        df[i + '_mean_last_1'] = df[i + '_mean_last_1'].astype(float)
+
+    no_features = ['id', 'target', 'timestamp', 'ID', 'fold']
 
     lb_feas = ['app_version', 'device_vendor', 'device_version', 'deviceid', 'guid', 'netmodel', 'newsid', 'osversion',
                'timestamp', 'outertag', 'tag', 'applist', 'ts']
