@@ -28,8 +28,8 @@ def getlocation(lat, lng):
 
 
 if __name__ == '__main__':
-    train = pd.read_feather('data/train.feather', )
-    test = pd.read_feather('data/test.feather')
+    train = pd.read_feather('data/train.csv')
+    test = pd.read_feather('data/test.csv')
     df = pd.concat([train, test], sort=False, axis=0)
     df['lat'] = df['lat'].astype(str)
     df['lng'] = df['lng'].astype(str)
