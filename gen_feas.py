@@ -48,6 +48,7 @@ train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
 
+
 # 将时间戳转为datetime
 train_df['ts'] = train_df['ts'].apply(lambda x: get_time_str(x / 1000))
 test_df['ts'] = test_df['ts'].apply(lambda x: get_time_str(x / 1000))
