@@ -17,10 +17,15 @@ import gc
 import datetime
 from sklearn.utils import shuffle
 from utils import *
-
 import time
 
 start_time = time.time()
+
+
+def get_time_str(x):
+    dateArray = datetime.datetime.utcfromtimestamp(x)
+    otherStyleTime = dateArray.strftime('%Y-%m-%d %H:%M:%S')
+    return otherStyleTime
 
 
 # 辅助函数
@@ -40,20 +45,12 @@ def statics():
 root = Path('./data/')
 train_df = pd.read_csv(root / 'train.csv')
 train_df['target'] = train_df['target'].astype(int)
-
 test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
 
-
-def get_time_str(x):
-    dateArray = datetime.datetime.utcfromtimestamp(x)
-    otherStyleTime = dateArray.strftime('%Y-%m-%d %H:%M:%S')
-    return otherStyleTime
-
-
+# 将时间戳转为datetime
 train_df['ts'] = train_df['ts'].apply(lambda x: get_time_str(x / 1000))
 test_df['ts'] = test_df['ts'].apply(lambda x: get_time_str(x / 1000))
-
 train_df['ts'] = pd.to_datetime(train_df['ts'])
 test_df['ts'] = pd.to_datetime(test_df['ts'])
 
@@ -404,7 +401,7 @@ del tag_fea
 gc.collect()
 
 df = reduce_mem_usage(df)
-no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp']
+no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(200).to_csv('tmp/df.csv', index=None)
