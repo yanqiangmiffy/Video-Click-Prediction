@@ -95,7 +95,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
 
 fea_importance_df = pd.DataFrame({
     'features': features,
-    'importance': fea_importances
+    'importance': fea_importances/kfold.n_splits
 })
 fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/lgb_fea_importance.csv', index=None)
 

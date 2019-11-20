@@ -80,7 +80,7 @@ user_df = pd.read_csv(root / 'user.csv')
 # print(df.info())
 
 cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
-            ['pos', 'netmodel', 'osversion'] + \
+            ['pos', 'osversion'] + \
             ['guid', 'newsid']
 
 # df=pd.get_dummies(df,columns=cate_cols)
@@ -364,7 +364,7 @@ def get_cvr_fea(data):
     data['fold'] = data['ID'] % 5
     data.loc[data.target.isnull(), 'fold'] = 5
     target_feat = []
-    for i in tqdm(cate_cols):
+    for i in tqdm(cate_cols+['day','hour','dayofweek','deviceid']):
         target_feat.extend([i + '_mean_last_1'])
         data[i + '_mean_last_1'] = None
         for fold in range(6):
