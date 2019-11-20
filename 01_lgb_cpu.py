@@ -59,12 +59,11 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                              seed=2019,
                              )
 
-    bst.booster_._feature_names = features
-    bst.booster_.feature_name = types.MethodType(lambda self: self._feature_names, bst.booster_)
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
             eval_metric=['logloss', 'auc'],
             verbose=True,
+            feature_name=None,
             early_stopping_rounds=50)
     valid_pred = bst.predict(X_valid)
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
