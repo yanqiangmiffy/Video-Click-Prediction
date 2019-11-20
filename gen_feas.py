@@ -316,7 +316,7 @@ def get_outertag_fea():
                         all_outertag[tmp[0]] = 0
                         all_outertag[tmp[0]] += float(tmp[1])
     top_outertag = {}
-    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:20]:
+    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:10]:
         top_outertag[tag] = score
     for tag in top_outertag:
         grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_outertag[tag] if tag in x else 0)
@@ -346,7 +346,7 @@ def get_tag_fea():
                         all_tag[tmp[0]] = 0
                         all_tag[tmp[0]] += float(tmp[1])
     top_tag = {}
-    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:50]:
+    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:20]:
         top_tag[tag] = score
 
     for tag in top_tag:
@@ -373,23 +373,23 @@ def get_cvr_fea(data):
             )
         data[i + '_mean_last_1'] = data[i + '_mean_last_1'].astype(float)
 
-    return df
+    return data
 
 
-# df = get_cvr_fea(df)
-# df = get_news_fea(df)
-# df = get_ctr_fea(df)
-# df = get_combination_fea(df)
-
-# app_fea = get_app_fea()
-# df = pd.merge(df, app_fea, on='deviceid', how='left')
-# del app_fea
-# gc.collect()
-
-# user_fea = get_user_fea()
-# df = pd.merge(df, user_fea, on='deviceid', how='left')
-# del user_fea
-# gc.collect()
+df = get_cvr_fea(df)
+df = get_news_fea(df)
+df = get_ctr_fea(df)
+df = get_combination_fea(df)
+#
+app_fea = get_app_fea()
+df = pd.merge(df, app_fea, on='deviceid', how='left')
+del app_fea
+gc.collect()
+#
+user_fea = get_user_fea()
+df = pd.merge(df, user_fea, on='deviceid', how='left')
+del user_fea
+gc.collect()
 
 outertag_fea = get_outertag_fea()
 df = pd.merge(df, outertag_fea, on='deviceid', how='left')
