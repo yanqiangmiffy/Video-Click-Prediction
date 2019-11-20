@@ -45,8 +45,8 @@ def pred(X_test, model, batch_size=10000):
 kfold = StratifiedKFold(n_splits=n_fold, shuffle=False, random_state=1314)
 for i, (train_index, valid_index) in enumerate(kfold.split(train[features], train[label])):
     print("n。{}_th fold".format(i))
-    X_train, y_train, X_valid, y_valid = train.loc[train_index][features], train[label].loc[train_index], \
-                                         train.loc[valid_index][features], train[label].loc[valid_index]
+    X_train, y_train, X_valid, y_valid = train.loc[train_index][features].values, train[label].loc[train_index].values, \
+                                         train.loc[valid_index][features].values, train[label].loc[valid_index].values
     bst = lgb.LGBMClassifier(boosting_type='gbdt',
                              num_leaves=1000,
                              max_depth=-1,
@@ -67,7 +67,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     valid_pred = bst.predict(X_valid)
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
     print("f1-score:", f1_score(y_valid, valid_pred))
-    y_pred_all_l1 += pred(test[features], bst)
+    y_pred_all_l1 += pred(test[features].values, bst)
 
     # 训练完成 发送邮件
     mail(str(i) + "lgb cpu 训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
