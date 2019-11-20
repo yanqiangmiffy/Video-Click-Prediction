@@ -46,17 +46,17 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     X_train, y_train, X_valid, y_valid = train.loc[train_index][features], train[label].loc[train_index], \
                                          train.loc[valid_index][features], train[label].loc[valid_index]
     bst = xgb.XGBClassifier(max_depth=3,
-                            n_estimators=6000,
+                            n_estimators=40000,
                             verbosity=1,
                             learning_rate=0.2,
                             # tree_method='gpu_hist',
-                            n_jobs=-1,
+                            n_jobs=32,
                             )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
             eval_metric=['logloss', 'auc'],
             verbose=True,
-            early_stopping_rounds=100)
+            early_stopping_rounds=50)
     valid_pred = bst.predict(X_valid)
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
     print("f1-score:", f1_score(y_valid, valid_pred))
@@ -64,7 +64,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     y_scores += bst.best_score
 
     # 训练完成 发送邮件
-    # mail(str(i) + "xgb cpu 训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
+    mail(str(i) + "xgb cpu 训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
 
     fea_importances += bst.feature_importances_
     del bst
