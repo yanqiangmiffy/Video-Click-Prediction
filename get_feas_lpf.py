@@ -66,7 +66,7 @@ def get_fea(train, test, user, app):
     cat_list = [i for i in train.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
 
 
-    no_features = ['id', 'target', 'timestamp', 'ID', 'fold']
+    no_features = ['id', 'target', 'timestamp', 'ID', 'fold', 'mark']
 
     lb_feas = ['app_version', 'device_vendor', 'device_version', 'deviceid', 'guid', 'netmodel', 'newsid', 'osversion',
                'timestamp', 'outertag', 'tag', 'applist', 'ts']
