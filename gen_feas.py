@@ -78,8 +78,8 @@ preprocess_ts(df)
 app_df = pd.read_csv(root / 'app.csv')
 user_df = pd.read_csv(root / 'user.csv')
 
-print(df)
-print(df.info())
+# print(df)
+# print(df.info())
 
 cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
             ['pos', 'netmodel', 'osversion'] + \
@@ -384,7 +384,6 @@ df = get_news_fea(df)
 df = get_combination_fea(df)
 
 app_fea = get_app_fea()
-print(app_fea)
 df = pd.merge(df, app_fea, on='deviceid', how='left')
 del app_fea
 gc.collect()
