@@ -34,10 +34,10 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')[:1000]
+train_df = pd.read_csv(root / 'train.csv')
 train_df['target'] = train_df['target'].astype(int)
 
-test_df = pd.read_csv(root / 'test.csv')[:10000]
+test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
 
 
@@ -123,7 +123,7 @@ def get_user_fea():
     grouped_df = grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    # user_df['deviceid_nunique_guid'] = user_df.groupby('deviceid').guid.transform('nunique')
+    user_df['deviceid_nunique_guid'] = user_df.groupby('deviceid').guid.transform('nunique')
 
     # 一个设备的outertag 的统计
     def get_outertag_nums(x):
@@ -162,43 +162,43 @@ def get_user_fea():
     grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    # grouped_df = user_df.groupby(by='deviceid').agg({'outertag_score': ['sum', 'median', 'mean']})
-    # grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
-    # grouped_df.reset_index()
-    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    grouped_df = user_df.groupby(by='deviceid').agg({'outertag_score': ['sum', 'median', 'mean']})
+    grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
     grouped_df = user_df.groupby(by='deviceid').agg({'tag_nums': ['sum', 'median', 'mean']})
     grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
     grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    # grouped_df = user_df.groupby(by='deviceid').agg({'tag_score': ['sum', 'median', 'mean']})
-    # grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
-    # grouped_df.reset_index()
-    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
-
+    grouped_df = user_df.groupby(by='deviceid').agg({'tag_score': ['sum', 'median', 'mean']})
+    grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    #
     # 设备的用户等级统计
-    # grouped_df = user_df.groupby(by='deviceid').agg({'level': ['sum']})
-    # grouped_df.columns = ['deviceid_level_sum']
-    # grouped_df.reset_index()
-    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    grouped_df = user_df.groupby(by='deviceid').agg({'level': ['sum']})
+    grouped_df.columns = ['deviceid_level_sum']
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
     # 设备的用户劣质统计
     # 1表示劣质用户 0表示正常用户。
-    # grouped_df = user_df.groupby(by='deviceid').agg({'personidentification': ['sum']})
-    # grouped_df.columns = ['deviceid_personidentification_sum']
-    # grouped_df.reset_index()
-    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    grouped_df = user_df.groupby(by='deviceid').agg({'personidentification': ['sum']})
+    grouped_df.columns = ['deviceid_personidentification_sum']
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    # grouped_df = user_df.groupby(by='deviceid').agg({'personalscore': ['sum']})
-    # grouped_df.columns = ['deviceid_personalscore_sum']
-    # grouped_df.reset_index()
-    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
-
-    # grouped_df = user_df.groupby(by='deviceid').agg({'followscore': ['sum']})
-    # grouped_df.columns = ['deviceid_followscore_sum']
-    # grouped_df.reset_index()
-    # user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    grouped_df = user_df.groupby(by='deviceid').agg({'personalscore': ['sum']})
+    grouped_df.columns = ['deviceid_personalscore_sum']
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    #
+    grouped_df = user_df.groupby(by='deviceid').agg({'followscore': ['sum']})
+    grouped_df.columns = ['deviceid_followscore_sum']
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
     return user_grouped_df
 
@@ -229,16 +229,16 @@ def get_news_fea(df):
     # 逆向unique
     df['guid_news_unique'] = df.groupby(by='guid')['newsid'].transform('nunique')  # 人数
     df['deviceid_news_unique'] = df.groupby(by='deviceid')['newsid'].transform('nunique')  # 设备
-    # df['pos_news_unique'] = df.groupby(by='pos')['newsid'].transform('nunique')
-    # df['app_version_news_unique'] = df.groupby(by='app_version')['newsid'].transform('nunique')
+    df['pos_news_unique'] = df.groupby(by='pos')['newsid'].transform('nunique')
+    df['app_version_news_unique'] = df.groupby(by='app_version')['newsid'].transform('nunique')
     df['device_vendor_news_unique'] = df.groupby(by='device_vendor')['newsid'].transform('nunique')
-    # df['netmodel_news_unique'] = df.groupby(by='netmodel')['newsid'].transform('nunique')
-    # df['osversion_news_unique'] = df.groupby(by='osversion')['newsid'].transform('nunique')
+    df['netmodel_news_unique'] = df.groupby(by='netmodel')['newsid'].transform('nunique')
+    df['osversion_news_unique'] = df.groupby(by='osversion')['newsid'].transform('nunique')
     df['device_version_news_unique'] = df.groupby(by='device_version')['newsid'].transform('nunique')
     df['lng_news_unique'] = df.groupby(by='lng')['newsid'].transform('nunique')  # 地理
     df['lat_news_unique'] = df.groupby(by='lat')['newsid'].transform('nunique')
-    # df['hour_news_unique'] = df.groupby(by='hour')['newsid'].transform('nunique')  # 地理
-    # df['dayofweek_news_unique'] = df.groupby(by='dayofweek')['newsid'].transform('nunique')
+    df['hour_news_unique'] = df.groupby(by='hour')['newsid'].transform('nunique')  # 地理
+    df['dayofweek_news_unique'] = df.groupby(by='dayofweek')['newsid'].transform('nunique')
     return df
 
 
@@ -266,24 +266,24 @@ def get_combination_fea(df):
     """
     print('添加组合特征...')
     combination_cols = []
-    # df['deviceid_newsid'] = (df['deviceid'] + df['newsid']).astype('category')
-    # df['guid_newsid'] = (df['guid'] + df['newsid']).astype('category')
-    # df['pos_newsid'] = (df['pos'] + df['newsid']).astype('category')
-    # df['device_vendor_newsid'] =( df['device_vendor'] + df['newsid']).astype('category')
-    # df['lng_newsid'] = (df['lng'] + df['newsid']).astype('category')
-    # df['hour_newsid'] = (df['hour'] + df['newsid']).astype('category')
-    # df['dayofweek_newsid'] =( df['dayofweek'] + df['newsid']).astype('category')
-    #
-    # df['dayofweek_hour'] = (df['dayofweek'] + df['hour']).astype('category')
+    df['deviceid_newsid'] = (df['deviceid'] + df['newsid']).astype('category')
+    df['guid_newsid'] = (df['guid'] + df['newsid']).astype('category')
+    df['pos_newsid'] = (df['pos'] + df['newsid']).astype('category')
+    df['device_vendor_newsid'] =( df['device_vendor'] + df['newsid']).astype('category')
+    df['lng_newsid'] = (df['lng'] + df['newsid']).astype('category')
+    df['hour_newsid'] = (df['hour'] + df['newsid']).astype('category')
+    df['dayofweek_newsid'] =( df['dayofweek'] + df['newsid']).astype('category')
+
+    df['dayofweek_hour'] = (df['dayofweek'] + df['hour']).astype('category')
 
     df['netmodel_hour'] = (df['netmodel'] + df['hour']).astype('category')
     df['netmodel_dayofweek'] = (df['netmodel'] + df['dayofweek']).astype('category')
 
     combination_cols.extend([
-        # 'deviceid_newsid', 'guid_newsid',
-        # 'pos_newsid', 'device_vendor_newsid',
-        # 'lng_newsid', 'hour_newsid',
-        # 'dayofweek_newsid', 'dayofweek_hour',
+        'deviceid_newsid', 'guid_newsid',
+        'pos_newsid', 'device_vendor_newsid',
+        'lng_newsid', 'hour_newsid',
+        'dayofweek_newsid', 'dayofweek_hour',
         'netmodel_hour', 'netmodel_dayofweek'
     ])
 
@@ -321,6 +321,7 @@ def get_outertag_fea():
     for tag in top_outertag:
         grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_outertag[tag] if tag in x else 0)
     del top_outertag, all_outertag
+    del grouped_df['deviceid_outertag']
     gc.collect()
 
     return grouped_df
@@ -349,6 +350,7 @@ def get_tag_fea():
     for tag in top_tag:
         grouped_df[tag] = grouped_df['deviceid_tag'].apply(lambda x: top_tag[tag] if tag in x else 0)
     del top_tag, all_tag
+    del grouped_df['deviceid_tag']
     gc.collect()
     return grouped_df
 
@@ -374,7 +376,7 @@ def get_cvr_fea(data):
 
 df = get_cvr_fea(df)
 df = get_news_fea(df)
-df = get_ctr_fea(df)
+# df = get_ctr_fea(df)
 df = get_combination_fea(df)
 
 app_fea = get_app_fea()

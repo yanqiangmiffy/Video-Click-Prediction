@@ -56,7 +56,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
             eval_set=[(X_valid, y_valid)],
             eval_metric=['logloss', 'auc'],
             verbose=True,
-            early_stopping_rounds=50)
+            early_stopping_rounds=10)
     valid_pred = bst.predict(X_valid)
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
     print("f1-score:", f1_score(y_valid, valid_pred))
