@@ -71,10 +71,10 @@ def lgb_para_binary_model(X_train, y_train, X_test, y_test):
         'max_depth': -1,
         'objective': 'binary',
         'metric': {'auc'},
-        'num_leaves': 500,
+        'num_leaves': 1000,
         'learning_rate': 0.1,
-        'feature_fraction': 0.8,
-        'bagging_fraction': 0.7,
+        'feature_fraction': 0.7,
+        'bagging_fraction': 0.6,
         'random_state': 1024,
         'n_jobs': -1,
     }
