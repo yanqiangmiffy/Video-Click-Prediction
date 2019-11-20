@@ -298,10 +298,8 @@ def get_combination_fea(df):
 
 
 def get_outertag_fea():
-    print("get_tag_fea....")
+    print("get_outertag_fea....")
     user_df['outertag'] = user_df['outertag'].astype(str)
-    user_df['tag'] = user_df['tag'].astype(str)
-
     grouped_df = user_df.groupby('deviceid').agg({'outertag': '|'.join})
     grouped_df.columns = ['deviceid_' + 'outertag']
     # 最受欢迎的50个outertag
@@ -331,6 +329,8 @@ def get_outertag_fea():
 
 def get_tag_fea():
     # 最受欢迎的100个tag
+    print("get_tag_fea....")
+    user_df['tag'] = user_df['tag'].astype(str)
     grouped_df = user_df.groupby('deviceid').agg({'tag': '|'.join})
     grouped_df.columns = ['deviceid_' + 'tag']
     all_tag = {}
@@ -376,20 +376,20 @@ def get_cvr_fea(data):
     return df
 
 
-df = get_cvr_fea(df)
-df = get_news_fea(df)
+# df = get_cvr_fea(df)
+# df = get_news_fea(df)
 # df = get_ctr_fea(df)
-df = get_combination_fea(df)
+# df = get_combination_fea(df)
 
-app_fea = get_app_fea()
-df = pd.merge(df, app_fea, on='deviceid', how='left')
-del app_fea
-gc.collect()
+# app_fea = get_app_fea()
+# df = pd.merge(df, app_fea, on='deviceid', how='left')
+# del app_fea
+# gc.collect()
 
-user_fea = get_user_fea()
-df = pd.merge(df, user_fea, on='deviceid', how='left')
-del user_fea
-gc.collect()
+# user_fea = get_user_fea()
+# df = pd.merge(df, user_fea, on='deviceid', how='left')
+# del user_fea
+# gc.collect()
 
 outertag_fea = get_outertag_fea()
 df = pd.merge(df, outertag_fea, on='deviceid', how='left')
