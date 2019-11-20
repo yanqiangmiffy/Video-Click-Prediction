@@ -55,6 +55,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
                              feature_fraction=0.6,
                              bagging_fraction=0.8,
                              bagging_freq=5,
+                             seed=2019,
                              )
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
