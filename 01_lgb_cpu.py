@@ -4,7 +4,7 @@
 import pandas as pd
 from sklearn.metrics import *
 import numpy as np
-import xgboost as xgb
+import lightgbm as lgb
 from sklearn.model_selection import StratifiedKFold, KFold
 from gen_feas import load_data
 import matplotlib.pyplot as plt
@@ -12,13 +12,14 @@ import seaborn as sns
 import gc
 from utils import *
 from tqdm import tqdm
+import types
 
 train, test, no_featuress, features = load_data()
 sample_submission = pd.read_feather('data/sample_submission.feather')
 
 n_fold = 5
 y_scores = 0
-test_size=test.shape[0]
+test_size = test.shape[0]
 y_pred_all_l1 = np.zeros(test_size)
 
 fea_importances = np.zeros(len(features))
@@ -35,23 +36,45 @@ def pred(X_test, model, batch_size=10000):
     y_test_pred_total = np.zeros(test_size)
     print(f'predicting {i}-th model')
     for k in tqdm(range(iterations)):
-        y_pred_test = model.predict_proba(X_test[k*batch_size:(k+1)*batch_size])[:, 1]
+        y_pred_test = model.predict_proba(X_test[k * batch_size:(k + 1) * batch_size])[:, 1]
         y_test_pred_total[k * batch_size:(k + 1) * batch_size] += y_pred_test
     return y_test_pred_total
+
+def rae(y_true, y_pred):
+    return 'RAE', np.sum(np.abs(y_pred - y_true)) / np.sum(np.abs(np.mean(y_true) - y_true)), False
+
+def rmsle(y_true, y_pred):
+    return 'RMSLE', np.sqrt(np.mean(np.power(np.log1p(y_pred) - np.log1p(y_true), 2))), False
+
+def lgb_f1_score(y_hat, data):
+    y_true = data.get_label()
+    y_hat = np.round(y_hat) # scikits f1 doesn't like probabilities
+    return 'f1', f1_score(y_true, y_hat), True
+
+def eval_func(y_pred, train_data):
+    y_true = train_data.get_label()
+    score = f1_score(y_true, np.round(y_pred))
+    return 'f1', score, True
+# clf.fit(X, y, eval_set=[(X, y)], eval_metric=lambda y_true, y_pred: [rmsle(y_true, y_pred), rae(y_true, y_pred)]
 
 # [1314, 4590]
 kfold = StratifiedKFold(n_splits=n_fold, shuffle=False, random_state=1314)
 for i, (train_index, valid_index) in enumerate(kfold.split(train[features], train[label])):
     print("n。{}_th fold".format(i))
-    X_train, y_train, X_valid, y_valid = train.loc[train_index][features], train[label].loc[train_index], \
-                                         train.loc[valid_index][features], train[label].loc[valid_index]
-    bst = xgb.XGBClassifier(max_depth=3,
-                            n_estimators=2000,
-                            verbosity=1,
-                            learning_rate=0.2,
-                            # tree_method='gpu_hist',
-                            n_jobs=32,
-                            )
+    X_train, y_train, X_valid, y_valid = train.loc[train_index][features].values, train[label].loc[train_index].values, \
+                                         train.loc[valid_index][features].values, train[label].loc[valid_index].values
+    bst = lgb.LGBMClassifier(boosting_type='gbdt',
+                             num_leaves=1000,
+                             max_depth=-1,
+                             learning_rate=0.1,
+                             n_estimators=40000,
+                             n_jobs=-1,
+                             feature_fraction=0.6,
+                             bagging_fraction=0.8,
+                             bagging_freq=5,
+                             seed=2019,
+                             )
+
     bst.fit(X_train, y_train,
             eval_set=[(X_valid, y_valid)],
             eval_metric=['logloss', 'auc'],
@@ -60,30 +83,31 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     valid_pred = bst.predict(X_valid)
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
     print("f1-score:", f1_score(y_valid, valid_pred))
-    y_pred_all_l1 += pred(test[features],bst)
-    y_scores += bst.best_score
+    y_pred_all_l1 += pred(test[features].values, bst)
 
     # 训练完成 发送邮件
-    mail(str(i) + "xgb cpu 训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
+    mail(str(i) + "lgb cpu 训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
 
     fea_importances += bst.feature_importances_
     del bst
     del valid_pred
     gc.collect()
 
-r = y_pred_all_l1 / n_fold
-sample_submission['target'] = r
-sample_submission.to_csv('result/xgb_prob.csv', index=False, sep=",")
-
-sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
-print(sample_submission['target'].value_counts())
-sample_submission.to_csv('result/xgb_result.csv', index=False)
-
 fea_importance_df = pd.DataFrame({
     'features': features,
     'importance': fea_importances
 })
-fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/fea_importance.csv', index=None)
+fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/lgb_fea_importance.csv', index=None)
+
+r = y_pred_all_l1 / n_fold
+sample_submission['target'] = r
+sample_submission.to_csv('result/lgb_prob.csv', index=False, sep=",")
+
+sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
+print(sample_submission['target'].value_counts())
+sample_submission.to_csv('result/lgb_result.csv', index=False)
+
+
 
 # plt.figure(figsize=(14, 30))
 # sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))

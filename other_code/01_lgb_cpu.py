@@ -73,6 +73,12 @@ def evalerror(preds, dtrain):
     return 'gini', Gini(labels, preds), True
 
 
+def eval_func(y_pred, train_data):
+    y_true = train_data.get_label()
+    score = f1_score(y_true, np.round(y_pred))
+    return 'f1', score, True
+
+
 from gen_feas import load_data
 
 train, test, no_features, features = load_data()
@@ -107,16 +113,20 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
 
     # 设置参数
     params = {
-        'learning_rate':0.2,
+        'learning_rate': 0.1,
         'boosting_type': 'gbdt',
         'objective': 'binary',
-        'metric': {'auc'},
-        'verbose': 1,
-        "nthread": -1
-        # 'lambda_l1':0.25,
-        # 'lambda_l2':0.5,
-        # 'scale_pos_weight':10.0/1.0, #14309.0 / 691.0, #不设置
-        # 'num_threads':4,
+        'metric': 'auc',
+        'feature_fraction': 0.6,
+        'bagging_fraction': 0.8,
+        'bagging_freq': 5,
+        'num_leaves': 1000,
+        'verbose': -1,
+        'max_depth': -1,
+        'seed': 2019,
+        'n_jobs': -1,
+        # 'device': 'gpu',
+        # 'gpu_device_id': 0,
     }
     print('................Start training..........................')
     # train
@@ -124,9 +134,10 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
                     lgb_train,
                     num_boost_round=2000,
                     valid_sets=(lgb_train, lgb_eval),
-                    early_stopping_rounds=100,
-                    verbose_eval=50,
-                    feval=evalerror,
+                    valid_names=['valid'],
+                    early_stopping_rounds=50,
+                    verbose_eval=10,
+                    feval=eval_func,
                     # feature_name=features,
 
                     )
@@ -139,12 +150,12 @@ for k, (train_in, test_in) in enumerate(skf.split(X, y)):
     auc_cv.append(tmp_auc)
     print("auc_score", tmp_auc)
 
-    mail(str(k)+"lgb cpu 训练完成，cv auc-score:{}".format(tmp_auc))
+    mail(str(k) + "lgb cpu 训练完成，cv auc-score:{}".format(tmp_auc))
 
     # test
     y_pred_all_l1 += gbm.predict(test_data, num_iteration=gbm.best_iteration)
 
-    del gbm,y_pred
+    del gbm, y_pred
     gc.collect()
 
 # K交叉验证的平均分数
