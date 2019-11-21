@@ -45,7 +45,7 @@ def statics():
 root = Path('./data/')
 train_df = pd.read_csv(root / 'train.csv')
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')]
+test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
 
 
