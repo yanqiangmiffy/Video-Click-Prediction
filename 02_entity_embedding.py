@@ -100,13 +100,13 @@ print('\n')
 print(len(embed_cols))
 
 numerical_features = [c for c in X_train.columns if (not c in embed_cols)]
+print(len(numerical_features))
+
 scaler = StandardScaler()
 X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
 X_test[numerical_features] = scaler.transform(X_test[numerical_features])  # 标准化
 
 
-#
-#
 def build_embedding_network():
     inputs = []
     embeddings = []
@@ -123,8 +123,8 @@ def build_embedding_network():
         inputs.append(cate_input)
         embeddings.append(embedding)
 
-    input_numeric = Input(shape=(len(numerical_features),))
-    embedding_numeric = Dense(5)(input_numeric)
+    input_numeric = Input(shape=(len(numerical_features),))  # 20
+    embedding_numeric = Dense(64)(input_numeric)
     inputs.append(input_numeric)
     embeddings.append(embedding_numeric)
 
@@ -137,7 +137,7 @@ def build_embedding_network():
 
     model = Model(inputs, output)
 
-    model.compile(loss='binary_crossentropy', optimizer='rmsprop')
+    model.compile(loss='binary_crossentropy', optimizer='')
 
     return model
 

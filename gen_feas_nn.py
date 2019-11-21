@@ -43,9 +43,9 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')
+train_df = pd.read_csv(root / 'train.csv')[:100000]
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')
+test_df = pd.read_csv(root / 'test.csv')[:100000]
 test_df['target'] = 0
 
 
@@ -401,12 +401,15 @@ df = pd.merge(df, tag_fea, on='deviceid', how='left')
 del tag_fea
 gc.collect()
 
+
 df.fillna(-1,inplace=True)
 
 
 df = reduce_mem_usage(df)
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
 features = [fea for fea in df.columns if fea not in no_features]
+for col in features:
+    df[col]=df[col].fillna(-1)
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(200).to_csv('tmp/df.csv', index=None)
 
