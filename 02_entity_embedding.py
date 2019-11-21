@@ -137,7 +137,7 @@ def build_embedding_network():
 
     model = Model(inputs, output)
 
-    model.compile(loss='binary_crossentropy', optimizer='')
+    model.compile(loss='binary_crossentropy', optimizer='rmsprop')
 
     return model
 
