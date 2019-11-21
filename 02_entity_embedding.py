@@ -236,7 +236,7 @@ def train():
                epochs=n_epochs,
                batch_size=128,
                verbose=1,
-               # callbacks=[auc_callback]
+               callbacks=[auc_callback]
                )
 
         val_preds += NN.predict(proc_X_val_f)[:, 0] / runs_per_fold
