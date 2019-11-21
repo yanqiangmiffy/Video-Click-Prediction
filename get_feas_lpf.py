@@ -25,7 +25,6 @@ scaler = StandardScaler()
 def get_fea(train, test, user, app):
     # test['target'] = 'test'
 
-
     user['mark'] = 0
     user['deviceid_count'] = user.groupby('deviceid').mark.transform('count')
     user['guid_count'] = user.groupby('guid').mark.transform('count')
@@ -63,19 +62,9 @@ def get_fea(train, test, user, app):
     df['ts_hour'] = df['ts'].apply(lambda x: x.hour)
 
     # 类别特征count特征
-    cat_list = [i for i in train.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
+    cat_list = [i for i in df.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
 
-
-    no_features = ['id', 'target', 'timestamp', 'ID', 'fold', 'mark']
-
-    lb_feas = ['app_version', 'device_vendor', 'device_version', 'deviceid', 'guid', 'netmodel', 'newsid', 'osversion',
-               'timestamp', 'outertag', 'tag', 'applist', 'ts']
-
-    for fea in lb_feas:
-        print(fea)
-        df[fea].fillna('w', inplace=True)
-        df[fea] = df[fea].astype(str)
-        df[fea] = LabelEncoder().fit_transform(df[fea])
+    no_features = ['id', 'target', 'timestamp', 'ID', 'fold']
 
     print(cat_list)
     print(df[cat_list])
@@ -96,6 +85,33 @@ def get_fea(train, test, user, app):
             )
         df[i + '_mean_last_1'] = df[i + '_mean_last_1'].astype(float)
 
+    for feas in [('guid', 'netmodel'), ('guid', 'osversion'), ('guid', 'device_version')]:
+        i, j = feas
+        train['%s_%s_unique'] = df.groupby([i])[j].transform('nunique')
+
+    def tag_score_sum(x):
+        x = str(x)
+
+        if '|' not in x:
+            return 0
+
+        x = x.split('|')
+        x = [float(i.split(':')[1]) for i in x]
+        return sum(x)
+    df['tag_sum'] = df['tag'].apply(lambda x: tag_score_sum(x))
+    df['outertag_sum'] = df['outertag'].apply(lambda x: tag_score_sum(x))
+
+    print(df[['tag', 'tag_sum', 'outertag', 'outertag_sum']])
+
+    lb_feas = ['app_version', 'device_vendor', 'device_version', 'deviceid', 'guid', 'netmodel', 'newsid', 'osversion',
+               'timestamp', 'outertag', 'tag', 'applist', 'ts']
+
+    for fea in lb_feas:
+        print(fea)
+        df[fea].fillna('w', inplace=True)
+        df[fea] = df[fea].astype(str)
+        df[fea] = LabelEncoder().fit_transform(df[fea])
+
     # train = df[df['target'] != 'test']
     # test = df[df['target'] == 'test']
     train = df[:len(train)]
@@ -107,11 +123,11 @@ def get_fea(train, test, user, app):
     print(train.shape)
     return train, test, no_features
 
-train = pd.read_csv('data/train.csv')
-test = pd.read_csv('data/test.csv')
-user = pd.read_csv('data/user.csv')
-app = pd.read_csv('data/app.csv')
-sample = pd.read_csv('data/sample.csv')
+train = pd.read_csv('../data/train.csv')
+test = pd.read_csv('../data/test.csv')
+user = pd.read_csv('../data/user.csv')
+app = pd.read_csv('../data/app.csv')
+sample = pd.read_csv('../data/sample.csv')
 
 train, test, no_features = get_fea(train, test, user, app)
 print('get_fea ok')
@@ -125,7 +141,7 @@ features = [fea for fea in train.columns if fea not in no_features]
 #
 # test_df = test[features]
 
-
+# print(train)
 def load_data():
     return train, test, no_features, features
 
