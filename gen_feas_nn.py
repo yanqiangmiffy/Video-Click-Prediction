@@ -43,9 +43,9 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')
+train_df = pd.read_csv(root / 'train.csv')[:100000]
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')
+test_df = pd.read_csv(root / 'test.csv')[:100000]
 test_df['target'] = 0
 
 # 将时间戳转为datetime
