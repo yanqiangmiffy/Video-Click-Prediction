@@ -123,11 +123,11 @@ def get_fea(train, test, user, app):
     print(train.shape)
     return train, test, no_features
 
-train = pd.read_csv('../data/train.csv')
-test = pd.read_csv('../data/test.csv')
-user = pd.read_csv('../data/user.csv')
-app = pd.read_csv('../data/app.csv')
-sample = pd.read_csv('../data/sample.csv')
+train = pd.read_csv('data/train.csv')
+test = pd.read_csv('data/test.csv')
+user = pd.read_csv('data/user.csv')
+app = pd.read_csv('data/app.csv')
+sample = pd.read_csv('data/sample.csv')
 
 train, test, no_features = get_fea(train, test, user, app)
 print('get_fea ok')
