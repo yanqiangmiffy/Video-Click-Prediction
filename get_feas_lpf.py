@@ -101,7 +101,7 @@ def get_fea(train, test, user, app):
     # df['tag_sum'] = df['tag'].apply(lambda x: tag_score_sum(x))
     # df['outertag_sum'] = df['outertag'].apply(lambda x: tag_score_sum(x))
 
-    print(df[['tag', 'tag_sum', 'outertag', 'outertag_sum']])
+    # print(df[['tag', 'tag_sum', 'outertag', 'outertag_sum']])
 
     lb_feas = ['app_version', 'device_vendor', 'device_version', 'deviceid', 'guid', 'netmodel', 'newsid', 'osversion',
                'timestamp', 'outertag', 'tag', 'applist', 'ts']
