@@ -62,7 +62,7 @@ def get_fea(train, test, user, app):
     df['ts_hour'] = df['ts'].apply(lambda x: x.hour)
 
     # 类别特征count特征
-    cat_list = [i for i in df.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
+    cat_list = [i for i in train.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
 
     no_features = ['id', 'target', 'timestamp', 'ID', 'fold']
 
@@ -98,8 +98,8 @@ def get_fea(train, test, user, app):
         x = x.split('|')
         x = [float(i.split(':')[1]) for i in x]
         return sum(x)
-    df['tag_sum'] = df['tag'].apply(lambda x: tag_score_sum(x))
-    df['outertag_sum'] = df['outertag'].apply(lambda x: tag_score_sum(x))
+    # df['tag_sum'] = df['tag'].apply(lambda x: tag_score_sum(x))
+    # df['outertag_sum'] = df['outertag'].apply(lambda x: tag_score_sum(x))
 
     print(df[['tag', 'tag_sum', 'outertag', 'outertag_sum']])
 
