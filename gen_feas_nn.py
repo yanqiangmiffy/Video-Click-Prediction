@@ -43,9 +43,9 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')[:100000]
+train_df = pd.read_csv(root / 'train.csv')
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')[:100000]
+test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
 
 # 将时间戳转为datetime
@@ -267,14 +267,14 @@ def get_combination_fea(df):
     """
     print('添加组合特征...')
     pairs=[
-        'deviceid_newsid', 'guid_newsid',
-        'pos_newsid', 'device_vendor_newsid',
-        'lng_newsid', 'hour_newsid',
-        'dayofweek_newsid', 'dayofweek_hour',
-        'netmodel_hour', 'netmodel_dayofweek'
+        'deviceid,newsid', 'guid,newsid',
+        'pos,newsid', 'device_vendor,newsid',
+        'lng,newsid', 'hour,newsid',
+        'dayofweek,newsid', 'dayofweek,hour',
+        'netmodel,hour', 'netmodel,dayofweek'
     ]
     for pair in pairs:
-        col1,col2=pair.split('_')[0],pair.split('_')[1]
+        col1,col2=pair.split(',')[0],pair.split(',')[1]
         df[pair] = (df[col1].astype(str) + df[col2].astype(str)).astype('category')
         tmp_count = dict(df[pair].value_counts())
         df[pair+'_count'] = df[pair].apply(lambda x: tmp_count[x])
