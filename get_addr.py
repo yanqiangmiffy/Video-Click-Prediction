@@ -47,7 +47,7 @@ if __name__ == '__main__':
     print(address[:10])
     with open('tmp/address.csv', 'a', encoding='utf-8') as f:
         for i in range(len(address[1326:])):
-            print(i)
+            print(i+1326)
             index = address[i]
             lat = str(index[0])
             lng = str(index[1])
