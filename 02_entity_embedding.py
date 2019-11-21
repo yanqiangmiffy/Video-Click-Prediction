@@ -226,8 +226,8 @@ def train():
 
         # track oof prediction for cv scores
         val_preds = 0
-        auc_callback = roc_auc_callback(training_data=(proc_X_train_f, y_train_f),
-                                        validation_data=(proc_X_val_f, y_val_f))
+        # auc_callback = roc_auc_callback(training_data=(proc_X_train_f, y_train_f),
+        #                                 validation_data=(proc_X_val_f, y_val_f))
         NN = build_embedding_network()
 
         NN.summary()
@@ -236,7 +236,7 @@ def train():
                epochs=n_epochs,
                batch_size=128,
                verbose=1,
-               callbacks=[auc_callback]
+               # callbacks=[auc_callback]
                )
 
         val_preds += NN.predict(proc_X_val_f)[:, 0] / runs_per_fold
