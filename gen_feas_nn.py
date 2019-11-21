@@ -48,7 +48,6 @@ train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
 
-
 # 将时间戳转为datetime
 train_df['ts'] = train_df['ts'].apply(lambda x: get_time_str(x / 1000))
 test_df['ts'] = test_df['ts'].apply(lambda x: get_time_str(x / 1000))
@@ -364,7 +363,7 @@ def get_cvr_fea(data):
     data['fold'] = data['ID'] % 5
     data.loc[data.target.isnull(), 'fold'] = 5
     target_feat = []
-    for i in tqdm(cate_cols+['day','hour','dayofweek','deviceid']):
+    for i in tqdm(cate_cols + ['day', 'hour', 'dayofweek', 'deviceid']):
         target_feat.extend([i + '_mean_last_1'])
         data[i + '_mean_last_1'] = None
         for fold in range(6):
@@ -401,15 +400,13 @@ df = pd.merge(df, tag_fea, on='deviceid', how='left')
 del tag_fea
 gc.collect()
 
-
-df.fillna(-1,inplace=True)
-
-
-df = reduce_mem_usage(df)
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
 features = [fea for fea in df.columns if fea not in no_features]
 for col in features:
-    df[col]=df[col].fillna(-1)
+    df[col] = df[col].fillna(-1)
+
+df = reduce_mem_usage(df)
+
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(200).to_csv('tmp/df.csv', index=None)
 
