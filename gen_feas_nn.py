@@ -43,11 +43,10 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')
+train_df = pd.read_csv(root / 'train.csv')[:100000]
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')
+test_df = pd.read_csv(root / 'test.csv')[:100000]
 test_df['target'] = 0
-
 
 # 将时间戳转为datetime
 train_df['ts'] = train_df['ts'].apply(lambda x: get_time_str(x / 1000))
@@ -267,33 +266,61 @@ def get_combination_fea(df):
     :return:
     """
     print('添加组合特征...')
-    combination_cols = []
-    df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
-    df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
-
-    df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
-
-    df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
-    df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
-
-    combination_cols.extend([
-        'deviceid_newsid', 'guid_newsid',
-        'pos_newsid', 'device_vendor_newsid',
-        'lng_newsid', 'hour_newsid',
-        'dayofweek_newsid', 'dayofweek_hour',
-        'netmodel_hour', 'netmodel_dayofweek'
-    ])
-
-    for col in combination_cols:
-        print(col)
-        df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
-        del df[col]
+    pairs=[
+        'deviceid,newsid', 'guid,newsid',
+        'pos,newsid', 'device_vendor,newsid',
+        'lng,newsid', 'hour,newsid',
+        'dayofweek,newsid', 'dayofweek,hour',
+        'netmodel,hour', 'netmodel,dayofweek'
+    ]
+    for pair in pairs:
+        col1,col2=pair.split(',')[0],pair.split(',')[1]
+        df[pair] = (df[col1].astype(str) + df[col2].astype(str)).astype('category')
+        tmp_count = dict(df[pair].value_counts())
+        df[pair+'_count'] = df[pair].apply(lambda x: tmp_count[x])
+        del tmp_count,df[pair]
         gc.collect()
+
+    # df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
+    #
+    # df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
+    #
+    # df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+    # df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
+
+    # combination_cols = []
+    # df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+    # df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
+    #
+    # df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
+    #
+    # df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+    # df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
+    #
+    # combination_cols.extend([
+    #     'deviceid_newsid', 'guid_newsid',
+    #     'pos_newsid', 'device_vendor_newsid',
+    #     'lng_newsid', 'hour_newsid',
+    #     'dayofweek_newsid', 'dayofweek_hour',
+    #     'netmodel_hour', 'netmodel_dayofweek'
+    # ])
+    #
+    # for col in combination_cols:
+    #     print(col)
+    #     df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
+    #     del df[col]
+    #     gc.collect()
     return df
 
 
@@ -364,7 +391,7 @@ def get_cvr_fea(data):
     data['fold'] = data['ID'] % 5
     data.loc[data.target.isnull(), 'fold'] = 5
     target_feat = []
-    for i in tqdm(cate_cols+['day','hour','dayofweek','deviceid']):
+    for i in tqdm(cate_cols + ['day', 'hour', 'dayofweek', 'deviceid']):
         target_feat.extend([i + '_mean_last_1'])
         data[i + '_mean_last_1'] = None
         for fold in range(6):
@@ -401,15 +428,13 @@ df = pd.merge(df, tag_fea, on='deviceid', how='left')
 del tag_fea
 gc.collect()
 
-
-df.fillna(-1,inplace=True)
-
-
-df = reduce_mem_usage(df)
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
 features = [fea for fea in df.columns if fea not in no_features]
 for col in features:
-    df[col]=df[col].fillna(-1)
+    df[col] = df[col].fillna(-1)
+
+df = reduce_mem_usage(df)
+
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(200).to_csv('tmp/df.csv', index=None)
 

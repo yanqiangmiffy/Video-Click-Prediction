@@ -15,7 +15,7 @@ import pandas as pd
 from keras.callbacks import *
 from keras.layers import *
 from tqdm import tqdm
-
+import gc
 # random seeds for stochastic parts of neural network
 np.random.seed(10)
 from tensorflow import set_random_seed
@@ -89,7 +89,7 @@ X_test = X_test[cols_use]
 categorical_features = features
 
 col_vals_dict = {c: list(X_train[c].unique()) for c in categorical_features}
-print(col_vals_dict)
+# print(col_vals_dict)
 embed_cols = []
 for c in col_vals_dict:
     if 2<=len(col_vals_dict[c]) <= 1000:
@@ -102,9 +102,13 @@ print(len(embed_cols))
 numerical_features = [c for c in X_train.columns if (not c in embed_cols)]
 print(len(numerical_features))
 
-scaler = StandardScaler()
-X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
-X_test[numerical_features] = scaler.transform(X_test[numerical_features])  # 标准化
+# scaler = StandardScaler()
+# X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
+# X_test[numerical_features] = scaler.transform(X_test[numerical_features])  # 标准化
+
+for feat in numerical_features :
+    X_train[feat] = X_train[feat].rank() / float(X_train.shape[0])  # 排序，并且进行归一化
+    X_test[feat] = X_test[feat].rank() / float(X_test.shape[0])  # 排序，并且进行归一化
 
 
 def build_embedding_network():
@@ -237,7 +241,7 @@ def train():
 
         val_preds += NN.predict(proc_X_val_f)[:, 0] / runs_per_fold
         y_preds[:, i] += NN.predict(proc_X_test_f)[:, 0] / runs_per_fold
-        NN.save('models/entity{}.hd5'.format(i + 1))
+        NN.save('tmp/entity{}.hd5'.format(i + 1))
 
         full_val_preds[outf_ind] += val_preds
         cv_gini = gini_normalizedc(y_val_f.values, val_preds)
@@ -245,7 +249,8 @@ def train():
         cv_ginis.append(cv_gini)
         print('\nFold %i prediction cv gini: %.5f\n' % (i, cv_gini))
         print('\nFold %i prediction cv auc: %.5f\n' % (i, cv_auc))
-
+        del NN
+        gc.collect()
     print('Mean out of fold gini: %.5f' % np.mean(cv_ginis))
     print('Full validation gini: %.5f' % gini_normalizedc(y_train.values, full_val_preds))
 
