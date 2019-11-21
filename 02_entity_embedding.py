@@ -133,15 +133,15 @@ def build_embedding_network():
     embeddings.append(embedding_numeric)
 
     x = Concatenate()(embeddings)
-    x = Dense(300, activation='relu')(x)
+    x = Dense(128, activation='relu')(x)
     x = Dropout(.35)(x)
-    x = Dense(100, activation='relu')(x)
+    x = Dense(64, activation='relu')(x)
     x = Dropout(.15)(x)
     output = Dense(1, activation='sigmoid')(x)
 
     model = Model(inputs, output)
 
-    model.compile(loss='binary_crossentropy', optimizer='rmsprop')
+    model.compile(loss='binary_crossentropy', optimizer='adam')
 
     return model
 
@@ -234,7 +234,7 @@ def train():
         NN.fit(proc_X_train_f,
                y_train_f.values,
                epochs=n_epochs,
-               batch_size=128,
+               batch_size=64,
                verbose=1,
                # callbacks=[auc_callback]
                )
