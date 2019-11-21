@@ -406,7 +406,7 @@ def get_cvr_fea(df):
 get_cvr_fea(df)
 get_news_fea(df)
 # df = get_ctr_fea(df)
-get_combination_fea(df)
+# get_combination_fea(df)
 #
 app_fea = get_app_fea()
 df = pd.merge(df, app_fea, on='deviceid', how='left')
