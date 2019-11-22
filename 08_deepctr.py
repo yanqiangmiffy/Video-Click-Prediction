@@ -138,7 +138,7 @@ for k, (train_index, valid_index) in enumerate(skf.split(X, y)):
     model.fit(train_model_input, y_train,
               validation_data=[vaild_model_input, y_valid],
               verbose=1,
-              batch_size=1024,
+              batch_size=2048,
               epochs=10,
               validation_split=0.2
               )
