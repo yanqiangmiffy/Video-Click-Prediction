@@ -96,10 +96,10 @@ def get_fea(train, test, user, app):
             return 0
 
         x = x.split('|')
-        x = [float(i.split(':')[1]) for i in x]
+        x = [float(i.split(':')[1]) for i in x if len(i.split(':')) > 1]
         return sum(x)
-    # df['tag_sum'] = df['tag'].apply(lambda x: tag_score_sum(x))
-    # df['outertag_sum'] = df['outertag'].apply(lambda x: tag_score_sum(x))
+    df['tag_sum'] = df['tag'].apply(lambda x: tag_score_sum(x))
+    df['outertag_sum'] = df['outertag'].apply(lambda x: tag_score_sum(x))
 
     # print(df[['tag', 'tag_sum', 'outertag', 'outertag_sum']])
 
