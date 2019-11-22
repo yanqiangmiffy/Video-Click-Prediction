@@ -43,9 +43,9 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')
+train_df = pd.read_csv(root / 'train.csv')[:100000]
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')
+test_df = pd.read_csv(root / 'test.csv')[:100000]
 test_df['target'] = 0
 
 # 将时间戳转为datetime
@@ -428,7 +428,7 @@ df = pd.merge(df, tag_fea, on='deviceid', how='left')
 del tag_fea
 gc.collect()
 
-no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
+no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold','{}_count']
 features = [fea for fea in df.columns if fea not in no_features]
 for col in features:
     df[col] = df[col].fillna(-1)
@@ -444,14 +444,57 @@ print(train['target'].value_counts())
 print("train shape", train.shape)
 print("test shape", test.shape)
 
-del df
-del train_df
-del test_df
-gc.collect()
+
 
 end_time = time.time()
 print("生成特征耗时：", end_time - start_time)
 
 
+
+
+
+X_train, y_train = train, train.target
+X_test = test
+del train,test
+
+#
+cols_use = [c for c in df.columns if (c not in no_features)]
+X_train = X_train[cols_use]
+X_test = X_test[cols_use]
+
+categorical_features = features
+
+col_vals_dict = {c: list(df[c].unique()) for c in categorical_features}
+# print(col_vals_dict)
+embed_cols = []
+for c in col_vals_dict:
+    if 2<=len(col_vals_dict[c]) <= 1000:
+        if 'last_1' not in c:
+            embed_cols.append(c)
+            print(c + ': %d values' % len(col_vals_dict[c]))  # look at value counts to know the embedding dimensions
+print('\n')
+print(len(embed_cols))
+
+numerical_features = [c for c in df.columns if (not c in (embed_cols+no_features))]
+print(len(numerical_features))
+
+# scaler = StandardScaler()
+# X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
+# X_test[numerical_features] = scaler.transform(X_test[numerical_features])  # 标准化
+
+for feat in numerical_features :
+    X_train[feat] = X_train[feat].rank() / float(X_train.shape[0])  # 排序，并且进行归一化
+    X_test[feat] = X_test[feat].rank() / float(X_test.shape[0])  # 排序，并且进行归一化
+
+
+
+
+
+del df
+del train_df
+del test_df
+gc.collect()
+
+
 def load_data():
-    return train, test, no_features, features
+    return X_train,y_train,X_test,embed_cols,col_vals_dict,numerical_features

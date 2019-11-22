@@ -70,45 +70,8 @@ class roc_auc_callback(Callback):
         return
 
 
-train, test, no_features, features = load_data()
-sample_submission = test[['id']]
-
-print(features, no_features)
-print(sample_submission)
-
-X_train, y_train = train, train.target
-X_test = test
-#
-cols_use = [c for c in X_train.columns if (c not in no_features)]
-X_train = X_train[cols_use]
-X_test = X_test[cols_use]
-#
-# categorical_features = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
-#                        ['pos', 'osversion'] + \
-#                        ['guid', 'newsid']
-categorical_features = features
-
-col_vals_dict = {c: list(X_train[c].unique()) for c in categorical_features}
-# print(col_vals_dict)
-embed_cols = []
-for c in col_vals_dict:
-    if 2<=len(col_vals_dict[c]) <= 1000:
-        if 'last_1' not in c:
-            embed_cols.append(c)
-            print(c + ': %d values' % len(col_vals_dict[c]))  # look at value counts to know the embedding dimensions
-print('\n')
-print(len(embed_cols))
-
-numerical_features = [c for c in X_train.columns if (not c in embed_cols)]
-print(len(numerical_features))
-
-# scaler = StandardScaler()
-# X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
-# X_test[numerical_features] = scaler.transform(X_test[numerical_features])  # 标准化
-
-for feat in numerical_features :
-    X_train[feat] = X_train[feat].rank() / float(X_train.shape[0])  # 排序，并且进行归一化
-    X_test[feat] = X_test[feat].rank() / float(X_test.shape[0])  # 排序，并且进行归一化
+X_train,y_train,X_test,embed_cols,col_vals_dict,numerical_features = load_data()
+submission=pd.read_feather('data/sample_submission.feather')
 
 
 def build_embedding_network():
@@ -154,7 +117,6 @@ def preproc(X_train, X_val, X_test):
 
     # the cols to be embedded: rescaling to range [0, # values)
     for c in embed_cols:
-        print(c)
         raw_vals = np.unique(X_train[c])
         val_map = {}
         for i in range(len(raw_vals)):
@@ -255,9 +217,9 @@ def train():
     print('Full validation gini: %.5f' % gini_normalizedc(y_train.values, full_val_preds))
 
     y_pred_final = np.mean(y_preds, axis=1)
-    print(len(test.id))
+    print(len(submission.id))
     print(len(y_pred_final))
-    df_sub = pd.DataFrame({'id': test.id,
+    df_sub = pd.DataFrame({'id': submission.id,
                            'target': y_pred_final},
                           columns=['id', 'target'])
     df_sub.to_csv('result/NN_EntityEmbed_10fold-sub.csv', index=False)
