@@ -18,6 +18,7 @@ import datetime
 from sklearn.utils import shuffle
 from utils import *
 import time
+from xpinyin import Pinyin
 
 start_time = time.time()
 
@@ -43,9 +44,9 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')
+train_df = pd.read_csv(root / 'train.csv')[:100000]
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')
+test_df = pd.read_csv(root / 'test.csv')[:100000]
 test_df['target'] = 0
 
 # 将时间戳转为datetime
@@ -266,7 +267,7 @@ def get_combination_fea(df):
     :return:
     """
     print('添加组合特征...')
-    pairs=[
+    pairs = [
         'deviceid,newsid', 'guid,newsid',
         'pos,newsid', 'device_vendor,newsid',
         'lng,newsid', 'hour,newsid',
@@ -274,11 +275,11 @@ def get_combination_fea(df):
         'netmodel,hour', 'netmodel,dayofweek'
     ]
     for pair in pairs:
-        col1,col2=pair.split(',')[0],pair.split(',')[1]
+        col1, col2 = pair.split(',')[0], pair.split(',')[1]
         df[pair] = (df[col1].astype(str) + df[col2].astype(str)).astype('category')
         tmp_count = dict(df[pair].value_counts())
-        df[pair+'_count'] = df[pair].apply(lambda x: tmp_count[x])
-        del tmp_count,df[pair]
+        df[pair + '_count'] = df[pair].apply(lambda x: tmp_count[x])
+        del tmp_count, df[pair]
         gc.collect()
 
     # df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
@@ -418,17 +419,25 @@ df = pd.merge(df, user_fea, on='deviceid', how='left')
 del user_fea
 gc.collect()
 
-outertag_fea = get_outertag_fea()
-df = pd.merge(df, outertag_fea, on='deviceid', how='left')
-del outertag_fea
-gc.collect()
+# outertag_fea = get_outertag_fea()
+# df = pd.merge(df, outertag_fea, on='deviceid', how='left')
+# del outertag_fea
+# gc.collect()
+#
+# tag_fea = get_tag_fea()
+# df = pd.merge(df, tag_fea, on='deviceid', how='left')
+# del tag_fea
+# gc.collect()
 
-tag_fea = get_tag_fea()
-df = pd.merge(df, tag_fea, on='deviceid', how='left')
-del tag_fea
-gc.collect()
+# deep_ctr = True
+# if deep_ctr:
+#     new_cols = []
+#     p = Pinyin()
+#     for i in range(len(df.columns)):
+#         new_cols.append(p.get_pinyin(df.columns[i]))
+#     df.columns = new_cols
 
-no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold','{}_count']
+no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold', '{}_count']
 features = [fea for fea in df.columns if fea not in no_features]
 for col in features:
     df[col] = df[col].fillna(-1)
@@ -444,18 +453,12 @@ print(train['target'].value_counts())
 print("train shape", train.shape)
 print("test shape", test.shape)
 
-
-
 end_time = time.time()
 print("生成特征耗时：", end_time - start_time)
 
-
-
-
-
 X_train, y_train = train, train.target
 X_test = test
-del train,test
+del train, test
 
 #
 cols_use = [c for c in df.columns if (c not in no_features)]
@@ -468,27 +471,23 @@ col_vals_dict = {c: list(df[c].unique()) for c in categorical_features}
 # print(col_vals_dict)
 embed_cols = []
 for c in col_vals_dict:
-    if 2<=len(col_vals_dict[c]) <= 1000:
+    if 2 <= len(col_vals_dict[c]) <= 1000:
         if 'last_1' not in c:
             embed_cols.append(c)
             print(c + ': %d values' % len(col_vals_dict[c]))  # look at value counts to know the embedding dimensions
 print('\n')
 print(len(embed_cols))
 
-numerical_features = [c for c in df.columns if (not c in (embed_cols+no_features))]
+numerical_features = [c for c in df.columns if (not c in (embed_cols + no_features))]
 print(len(numerical_features))
 
 # scaler = StandardScaler()
 # X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
 # X_test[numerical_features] = scaler.transform(X_test[numerical_features])  # 标准化
 
-for feat in numerical_features :
+for feat in numerical_features:
     X_train[feat] = X_train[feat].rank() / float(X_train.shape[0])  # 排序，并且进行归一化
     X_test[feat] = X_test[feat].rank() / float(X_test.shape[0])  # 排序，并且进行归一化
-
-
-
-
 
 del df
 del train_df
@@ -497,4 +496,4 @@ gc.collect()
 
 
 def load_data():
-    return X_train,y_train,X_test,embed_cols,col_vals_dict,numerical_features
+    return X_train, y_train, X_test, embed_cols, col_vals_dict, numerical_features

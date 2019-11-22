@@ -40,3 +40,6 @@ xgb gpu 速度很快
 - [推荐系统与特征工程 - 固本培元的专栏 - CSDN博客 ](https://blog.csdn.net/gubenpeiyuan/article/details/80834099)
 - [十二种特征工程相关技术简介_ITPUB博客 ](http://blog.itpub.net/29829936/viewspace-2648602/)
 - [数据挖掘实践与我的想法之特征工程 - TcD的博客 - CSDN博客  ](https://blog.csdn.net/u011094454/article/details/78572417)
+- [主流CTR预估模型的演化及对比 ](https://zhuanlan.zhihu.com/p/35465875)
+- [如何解决神经网络训练时loss不下降的问题](https://blog.ailemon.me/2019/02/26/solution-to-loss-doesnt-drop-in-nn-train/)
+- [神经网络不收敛的11个常见问题](https://zhuanlan.zhihu.com/p/36369878)
