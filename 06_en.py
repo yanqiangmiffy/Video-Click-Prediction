@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     submit['target'] = submit['target'].rank()
     # submit['target'] = (submit['target'] >= submit.shape[0] * 0.8934642948637943).astype(int)
-    submit['target'] = (submit['target'] >= submit.shape[0] * 0.89).astype(int)
+    submit['target'] = (submit['target'] >= submit.shape[0] * 0.90).astype(int)
     print(submit['target'].value_counts())
     submit.to_csv("result/en.csv", index=False)
 

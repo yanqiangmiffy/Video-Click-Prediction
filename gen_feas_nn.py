@@ -18,7 +18,6 @@ import datetime
 from sklearn.utils import shuffle
 from utils import *
 import time
-from xpinyin import Pinyin
 
 start_time = time.time()
 
