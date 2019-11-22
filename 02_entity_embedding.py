@@ -196,7 +196,7 @@ def train():
         NN.fit(proc_X_train_f,
                y_train_f.values,
                epochs=n_epochs,
-               batch_size=64,
+               batch_size=256,
                verbose=1,
                # callbacks=[auc_callback]
                )
