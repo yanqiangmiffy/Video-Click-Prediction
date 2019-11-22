@@ -22,7 +22,7 @@ if __name__ == '__main__':
     entity=pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
 
 
-    xgb_prob['target'] = lgb_prob['target'] * 0.7 + entity['target'] * 0.1+xgb_prob['target']*0.2
+    xgb_prob['target'] = lgb_prob['target'] * 0.2 + entity['target'] * 0.2+xgb_prob['target']*0.6
 
     # xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id', 'target']]
 

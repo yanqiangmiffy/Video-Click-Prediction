@@ -43,9 +43,9 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')[:100000]
+train_df = pd.read_csv(root / 'train.csv')
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')[:100000]
+test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
 
 # 将时间戳转为datetime
@@ -406,7 +406,7 @@ def get_cvr_fea(df):
 get_cvr_fea(df)
 get_news_fea(df)
 # df = get_ctr_fea(df)
-# get_combination_fea(df)
+get_combination_fea(df)
 #
 app_fea = get_app_fea()
 df = pd.merge(df, app_fea, on='deviceid', how='left')
@@ -418,23 +418,15 @@ df = pd.merge(df, user_fea, on='deviceid', how='left')
 del user_fea
 gc.collect()
 
-# outertag_fea = get_outertag_fea()
-# df = pd.merge(df, outertag_fea, on='deviceid', how='left')
-# del outertag_fea
-# gc.collect()
-#
-# tag_fea = get_tag_fea()
-# df = pd.merge(df, tag_fea, on='deviceid', how='left')
-# del tag_fea
-# gc.collect()
+outertag_fea = get_outertag_fea()
+df = pd.merge(df, outertag_fea, on='deviceid', how='left')
+del outertag_fea
+gc.collect()
 
-# deep_ctr = True
-# if deep_ctr:
-#     new_cols = []
-#     p = Pinyin()
-#     for i in range(len(df.columns)):
-#         new_cols.append(p.get_pinyin(df.columns[i]))
-#     df.columns = new_cols
+tag_fea = get_tag_fea()
+df = pd.merge(df, tag_fea, on='deviceid', how='left')
+del tag_fea
+gc.collect()
 
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold', '{}_count']
 features = [fea for fea in df.columns if fea not in no_features]
