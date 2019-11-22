@@ -1,6 +1,7 @@
 import pandas as pd
 
-xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id','target']]
+# xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id','target']]
+xgb_prob = pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')[['id','target']]
 print(xgb_prob)
 
 xgb_prob['key']=[i for i in range(len(xgb_prob))]
