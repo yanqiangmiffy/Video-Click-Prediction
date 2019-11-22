@@ -26,7 +26,7 @@ train = pd.read_csv(path + 'train.csv')
 test = pd.read_csv(path + 'test.csv')
 
 # 测试
-# train = train[0:10000]
+# train = train[0:100000]
 # test = test[0:10000]
 
 # print(train.head())
@@ -40,7 +40,6 @@ fix_len_category_columns = ['app_version', 'device_vendor', 'netmodel', 'osversi
 # 数值特征
 fix_len_number_columns = ['timestamp', 'lng', 'lat', 'ts']
 
-target = ['target']
 
 data[fix_len_category_columns] = data[fix_len_category_columns].fillna('-1', )
 data[fix_len_number_columns] = data[fix_len_number_columns].fillna(0, )
@@ -60,10 +59,13 @@ dnn_feature_columns = fixlen_feature_columns
 linear_feature_columns = fixlen_feature_columns
 feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
 
-X = data[~data['target'].isnull()]
+train = data[~data['target'].isnull()]
 test = data[data['target'].isnull()]
 
+
+X=train
 y = train.target.values
+del train
 
 
 def binary_PFA(y_true, y_pred, threshold=K.variable(value=0.5)):
@@ -132,6 +134,7 @@ for k, (train_index, valid_index) in enumerate(skf.split(X, y)):
     model = DeepFM(linear_feature_columns, dnn_feature_columns, task='binary')
     model.compile("adam", "binary_crossentropy",
                   metrics=[auc, f1_m])
+    model.summary()
     model.fit(train_model_input, y_train,
               validation_data=[vaild_model_input, y_valid],
               verbose=1,
