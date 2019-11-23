@@ -240,7 +240,7 @@ def get_news_fea(df):
     df['lat_news_unique'] = df.groupby(by='lat')['newsid'].transform('nunique')
     df['hour_news_unique'] = df.groupby(by='hour')['newsid'].transform('nunique')  # 地理
     df['dayofweek_news_unique'] = df.groupby(by='dayofweek')['newsid'].transform('nunique')
-    # return df
+    return df
 
 
 def get_ctr_fea(df):
@@ -265,64 +265,64 @@ def get_combination_fea(df):
     添加组合特征
     :return:
     """
-    print('添加组合特征...')
-    pairs = [
-        'deviceid,newsid', 'guid,newsid',
-        'pos,newsid', 'device_vendor,newsid',
-        'lng,newsid', 'hour,newsid',
-        'dayofweek,newsid', 'dayofweek,hour',
-        'netmodel,hour', 'netmodel,dayofweek'
-    ]
-    for pair in pairs:
-        col1, col2 = pair.split(',')[0], pair.split(',')[1]
-        df[pair] = (df[col1].astype(str) + df[col2].astype(str)).astype('category')
-        tmp_count = dict(df[pair].value_counts())
-        df[pair + '_count'] = df[pair].apply(lambda x: tmp_count[x])
-        del tmp_count, df[pair]
-        gc.collect()
-
-    # df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
-    #
-    # df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
-    #
-    # df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
-    # df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
-
-    # combination_cols = []
-    # df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
-    # df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
-    #
-    # df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
-    #
-    # df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
-    # df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
-    #
-    # combination_cols.extend([
-    #     'deviceid_newsid', 'guid_newsid',
-    #     'pos_newsid', 'device_vendor_newsid',
-    #     'lng_newsid', 'hour_newsid',
-    #     'dayofweek_newsid', 'dayofweek_hour',
-    #     'netmodel_hour', 'netmodel_dayofweek'
-    # ])
-    #
-    # for col in combination_cols:
-    #     print(col)
-    #     df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
-    #     del df[col]
+    # print('添加组合特征...')
+    # pairs = [
+    #     'deviceid,newsid', 'guid,newsid',
+    #     'pos,newsid', 'device_vendor,newsid',
+    #     'lng,newsid', 'hour,newsid',
+    #     'dayofweek,newsid', 'dayofweek,hour',
+    #     'netmodel,hour', 'netmodel,dayofweek'
+    # ]
+    # for pair in pairs:
+    #     col1, col2 = pair.split(',')[0], pair.split(',')[1]
+    #     df[pair] = (df[col1].astype(str) + df[col2].astype(str)).astype('category')
+    #     tmp_count = dict(df[pair].value_counts())
+    #     df[pair + '_count'] = df[pair].apply(lambda x: tmp_count[x])
+    #     del tmp_count, df[pair]
     #     gc.collect()
-    # return df
+    #
+    df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
 
+    df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
+
+    df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+    df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
+    #
+    combination_cols = []
+    df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
+
+    df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
+
+    df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+    df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
+
+    combination_cols.extend([
+        'deviceid_newsid', 'guid_newsid',
+        'pos_newsid', 'device_vendor_newsid',
+        'lng_newsid', 'hour_newsid',
+        'dayofweek_newsid', 'dayofweek_hour',
+        'netmodel_hour', 'netmodel_dayofweek'
+    ])
+
+    for col in combination_cols:
+        print(col)
+        df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
+        del df[col]
+        gc.collect()
+    return df
+#
 
 def get_outertag_fea():
     print("get_outertag_fea....")
@@ -400,13 +400,13 @@ def get_cvr_fea(df):
             )
         df[i + '_mean_last_1'] = df[i + '_mean_last_1'].astype(float)
 
-    # return df
+    return df
 
 
 get_cvr_fea(df)
-get_news_fea(df)
+df=get_news_fea(df)
 # df = get_ctr_fea(df)
-get_combination_fea(df)
+df=get_combination_fea(df)
 #
 app_fea = get_app_fea()
 df = pd.merge(df, app_fea, on='deviceid', how='left')

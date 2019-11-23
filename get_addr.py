@@ -46,12 +46,12 @@ if __name__ == '__main__':
     address = list(set(address))
     print(address[:10])
     with open('tmp/address.csv', 'a', encoding='utf-8') as f:
-        for i in range(len(address[13468:])):
-            print(i+13468)
+        for i in range(len(address[17488:])):
+            print(i+17488)
             index = address[i]
             lat = str(index[0])
             lng = str(index[1])
             f.write(lng + ',' + lat + ',' + json.dumps(getlocation(lat, lng), ensure_ascii=False))
             f.write('\n')
-            time.sleep(2)
+            # time.sleep(2)
     # jsonFormat()
