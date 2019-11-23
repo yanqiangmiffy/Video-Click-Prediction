@@ -154,7 +154,7 @@ def train():
     # network training
     K = 5
     runs_per_fold = 1
-    n_epochs = 5
+    n_epochs = 10
 
     cv_ginis = []
     full_val_preds = np.zeros(np.shape(X_train)[0])
