@@ -14,7 +14,6 @@ from sklearn.cluster import MiniBatchKMeans, KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 root = Path('../data/')
-app_df = pd.read_csv(root / 'app.csv')
 user_df = pd.read_csv(root / 'user.csv')
 
 

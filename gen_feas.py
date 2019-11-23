@@ -159,22 +159,22 @@ def get_user_fea():
     user_df['tag_nums'] = user_df['tag'].astype('str').apply(lambda x: get_outertag_nums(x))
     user_df['tag_score'] = user_df['tag'].astype('str').apply(lambda x: get_outertag_score(x))
 
-    grouped_df = user_df.groupby(by='deviceid').agg({'outertag_nums': ['sum', 'median', 'mean']})
+    grouped_df = user_df.groupby(by='deviceid').agg({'outertag_nums': ['sum']})
     grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
     grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    grouped_df = user_df.groupby(by='deviceid').agg({'outertag_score': ['sum', 'median', 'mean']})
+    grouped_df = user_df.groupby(by='deviceid').agg({'outertag_score': ['sum']})
     grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
     grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    grouped_df = user_df.groupby(by='deviceid').agg({'tag_nums': ['sum', 'median', 'mean']})
+    grouped_df = user_df.groupby(by='deviceid').agg({'tag_nums': ['sum']})
     grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
     grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
 
-    grouped_df = user_df.groupby(by='deviceid').agg({'tag_score': ['sum', 'median', 'mean']})
+    grouped_df = user_df.groupby(by='deviceid').agg({'tag_score': ['sum']})
     grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
     grouped_df.reset_index()
     user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
