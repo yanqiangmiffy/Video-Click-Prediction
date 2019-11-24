@@ -389,15 +389,15 @@ df = get_news_fea(df)
 # df = get_ctr_fea(df)
 # df = get_combination_fea(df)
 #
-app_fea = get_app_fea()
-df = pd.merge(df, app_fea, on='deviceid', how='left')
-del app_fea
-gc.collect()
-
-user_fea = get_user_fea()
-df = pd.merge(df, user_fea, on='deviceid', how='left')
-del user_fea
-gc.collect()
+# app_fea = get_app_fea()
+# df = pd.merge(df, app_fea, on='deviceid', how='left')
+# del app_fea
+# gc.collect()
+#
+# user_fea = get_user_fea()
+# df = pd.merge(df, user_fea, on='deviceid', how='left')
+# del user_fea
+# gc.collect()
 
 outertag_fea = get_outertag_fea()
 df = pd.merge(df, outertag_fea, on='deviceid', how='left')
