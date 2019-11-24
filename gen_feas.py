@@ -20,6 +20,7 @@ from utils import *
 import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans, MiniBatchKMeans
+
 start_time = time.time()
 
 
@@ -75,6 +76,11 @@ preprocess_ts(df)
 # statics()
 app_df = pd.read_csv(root / 'app.csv')
 user_df = pd.read_csv(root / 'user.csv')
+
+user = pd.read_csv("data/user.csv")
+user = user.drop_duplicates('deviceid')
+df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
+                  how='left', on='deviceid')
 
 # print(df)
 # print(df.info())
@@ -316,7 +322,7 @@ def get_outertag_fea():
                         all_outertag[tmp[0]] = 0
                         all_outertag[tmp[0]] += float(tmp[1])
     top_outertag = {}
-    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:20]:
+    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:30]:
         top_outertag[tag] = score
     for tag in top_outertag:
         grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_outertag[tag] if tag in x else 0)
@@ -346,7 +352,7 @@ def get_tag_fea():
                         all_tag[tmp[0]] = 0
                         all_tag[tmp[0]] += float(tmp[1])
     top_tag = {}
-    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:50]:
+    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:60]:
         top_tag[tag] = score
 
     for tag in top_tag:
@@ -358,13 +364,15 @@ def get_tag_fea():
 
 
 def get_cvr_fea(data):
+    cat_list = [i for i in train_df.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
+    print("cat_list", cat_list)
     # 类别特征五折转化率特征
     print("转化率特征....")
     data['ID'] = data.index
     data['fold'] = data['ID'] % 5
     data.loc[data.target.isnull(), 'fold'] = 5
     target_feat = []
-    for i in tqdm(cate_cols + ['day', 'hour', 'dayofweek', 'deviceid']):
+    for i in tqdm(cat_list):
         target_feat.extend([i + '_mean_last_1'])
         data[i + '_mean_last_1'] = None
         for fold in range(6):
@@ -385,7 +393,7 @@ app_fea = get_app_fea()
 df = pd.merge(df, app_fea, on='deviceid', how='left')
 del app_fea
 gc.collect()
-#
+
 user_fea = get_user_fea()
 df = pd.merge(df, user_fea, on='deviceid', how='left')
 del user_fea
@@ -401,7 +409,7 @@ df = pd.merge(df, tag_fea, on='deviceid', how='left')
 del tag_fea
 gc.collect()
 
-cluster_fea=pd.read_csv('features/01_user_cluster.csv')
+cluster_fea = pd.read_csv('features/01_user_cluster.csv')
 df = pd.merge(df, cluster_fea, on='deviceid', how='left')
 del cluster_fea
 gc.collect()
