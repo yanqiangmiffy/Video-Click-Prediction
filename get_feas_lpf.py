@@ -120,7 +120,7 @@ def get_fea(train, test, user, app):
     print(test.shape)
 
     train = train[train['target'].notnull()].reset_index(drop=True)
-    train = train[train['ts_day'] == 10]
+    train = train[train['ts_day'] == 8]
     print(train.shape)
     return train, test, no_features
 
