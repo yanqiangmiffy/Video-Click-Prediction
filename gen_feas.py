@@ -81,7 +81,7 @@ user = pd.read_csv("data/user.csv")
 user = user.drop_duplicates('deviceid')
 df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
                   how='left', on='deviceid')
-
+del user
 # print(df)
 # print(df.info())
 
@@ -322,7 +322,7 @@ def get_outertag_fea():
                         all_outertag[tmp[0]] = 0
                         all_outertag[tmp[0]] += float(tmp[1])
     top_outertag = {}
-    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:30]:
+    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:20]:
         top_outertag[tag] = score
     for tag in top_outertag:
         grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_outertag[tag] if tag in x else 0)
@@ -352,7 +352,7 @@ def get_tag_fea():
                         all_tag[tmp[0]] = 0
                         all_tag[tmp[0]] += float(tmp[1])
     top_tag = {}
-    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:60]:
+    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:50]:
         top_tag[tag] = score
 
     for tag in top_tag:
@@ -387,7 +387,7 @@ def get_cvr_fea(data):
 df = get_cvr_fea(df)
 df = get_news_fea(df)
 # df = get_ctr_fea(df)
-df = get_combination_fea(df)
+# df = get_combination_fea(df)
 #
 app_fea = get_app_fea()
 df = pd.merge(df, app_fea, on='deviceid', how='left')

@@ -24,10 +24,10 @@ if __name__ == '__main__':
     xgb_prob = pd.read_csv('result/xgb_prob.csv')
     entity = pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
 
-    # xgb_prob['target'] = lgb_prob['target'] * 0.7 + xgb_prob['target'] * 0.3
+    xgb_prob['target'] = lgb_prob['target'] * 0.7 + xgb_prob['target'] * 0.3
     # xgb_prob['target'] = lgb_prob['target'] * 0.4 + entity['target'] * 0.3 + xgb_prob['target'] * 0.3
     # xgb_prob['target'] = lgb_prob['target'] *0.5 + entity['target'] * 0.5
-    xgb_prob['target'] = lgb_prob['target']
+    # xgb_prob['target'] = lgb_prob['target']
 
     # threshold=0.45
     xgb_prob['target'] = xgb_prob['target'].apply(lambda x:1 if x>threshold else 0)
