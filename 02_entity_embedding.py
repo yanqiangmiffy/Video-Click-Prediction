@@ -154,7 +154,7 @@ def train():
     # network training
     K = 5
     runs_per_fold = 1
-    n_epochs = 10
+    n_epochs = 20
 
     cv_ginis = []
     full_val_preds = np.zeros(np.shape(X_train)[0])
@@ -196,7 +196,7 @@ def train():
         NN.fit(proc_X_train_f,
                y_train_f.values,
                epochs=n_epochs,
-               batch_size=4096,
+               batch_size=8192,
                verbose=1,
                # callbacks=[auc_callback]
                )

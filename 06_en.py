@@ -22,7 +22,8 @@ if __name__ == '__main__':
     entity=pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
 
 
-    xgb_prob['target'] = lgb_prob['target'] * 0.2 + entity['target'] * 0.2+xgb_prob['target']*0.6
+    xgb_prob['target'] = lgb_prob['target'] * 0.7 + entity['target'] * 0.2+xgb_prob['target']*0.1
+    # xgb_prob['target'] = lgb_prob['target'] * 0.7 + entity['target'] * 0.3
 
     # xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id', 'target']]
 
@@ -36,7 +37,7 @@ if __name__ == '__main__':
 
     submit['target'] = submit['target'].rank()
     # submit['target'] = (submit['target'] >= submit.shape[0] * 0.8934642948637943).astype(int)
-    submit['target'] = (submit['target'] >= submit.shape[0] * 0.90).astype(int)
+    submit['target'] = (submit['target'] >= submit.shape[0] * 0.89).astype(int)
     print(submit['target'].value_counts())
     submit.to_csv("result/en.csv", index=False)
 

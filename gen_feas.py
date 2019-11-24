@@ -401,6 +401,11 @@ df = pd.merge(df, tag_fea, on='deviceid', how='left')
 del tag_fea
 gc.collect()
 
+cluster_fea=pd.read_csv('features/01_user_cluster.csv')
+df = pd.merge(df, cluster_fea, on='deviceid', how='left')
+del cluster_fea
+gc.collect()
+
 df = reduce_mem_usage(df)
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
 features = [fea for fea in df.columns if fea not in no_features]
