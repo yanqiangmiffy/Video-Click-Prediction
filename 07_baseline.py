@@ -181,6 +181,9 @@ X_train = data[tr_index].reset_index(drop=True)[feature_name].reset_index(drop=T
 y = data[tr_index]['target'].reset_index(drop=True).values
 X_test = data.loc[data['id'].isin(test['id'].unique())][feature_name].reset_index(drop=True).values
 
+cluster_fea = pd.read_csv('features/01_user_cluster.csv')
+data = pd.merge(data, cluster_fea, on='deviceid', how='left')
+
 lgb_param = {
     'learning_rate': 0.1,
     'boosting_type': 'gbdt',
