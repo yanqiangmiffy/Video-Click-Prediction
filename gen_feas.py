@@ -385,7 +385,7 @@ def get_cvr_fea(data):
 
 
 df = get_cvr_fea(df)
-df = get_news_fea(df)
+# df = get_news_fea(df)
 # df = get_ctr_fea(df)
 # df = get_combination_fea(df)
 #
