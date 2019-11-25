@@ -93,11 +93,7 @@ preprocess_ts(df)
 app_df = pd.read_csv(root / 'app.csv')
 user_df = pd.read_csv(root / 'user.csv')
 
-user = pd.read_csv("data/user.csv")
-user = user.drop_duplicates('deviceid')
-df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
-                  how='left', on='deviceid')
-del user
+
 # print(df)
 # print(df.info())
 
@@ -430,6 +426,11 @@ df = pd.merge(df, cluster_fea, on='deviceid', how='left')
 del cluster_fea
 gc.collect()
 
+user = user_df.drop_duplicates('deviceid')
+df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
+                  how='left', on='deviceid')
+del user
+
 df = reduce_mem_usage(df)
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
 features = [fea for fea in df.columns if fea not in no_features]
@@ -445,11 +446,12 @@ print("test shape", test.shape)
 del df
 del train_df
 del test_df
+del user_df
+del app_df
 gc.collect()
 
 end_time = time.time()
 print("生成特征耗时：", end_time - start_time)
-
 
 def load_data():
     return train, test, no_features, features
