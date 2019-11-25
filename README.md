@@ -29,8 +29,21 @@ xgb gpu 速度很快
 - 转化率特征：过拟合
 
 ## 规则发现
+- 某些设备出现次数过多
 
-- 
+```text
+5b02f07eafae65fdbf9760867bcd8856    102979
+29078bf9ecff29c67c8f52c997445ee4     41052
+3af79e5941776d10da5427bfaa733b15     40925
+f4abf0d603045a3403133d25ab0fc60d     32907
+457d68dc078349635f3360fdc56d5a31     27315
+b89b4b8d9209c77531e7978cad4e088b     26737
+32d5f316d9357a3bfed17c3547e5aceb     26624
+cbc518e46c68e7cda3aaf6c2898d3b24     23420
+fe2745f02d1f287eacb965d218a3e653     21927
+5ea2d95b5a2d46a23cb5dacd0271dff7     20360
+
+```
 
 ## 参考资料
 - [基于特征工程的视频点击率预测算法](http://xblk.ecnu.edu.cn/CN/html/20180309.htm)

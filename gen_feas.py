@@ -46,6 +46,22 @@ def statics():
 # 加载数据
 root = Path('./data/')
 train_df = pd.read_csv(root / 'train.csv')
+print("train_df.shape",train_df.shape)
+# 删除deviceid出现次数过多的设备
+too_many=['5b02f07eafae65fdbf9760867bcd8856',
+          '29078bf9ecff29c67c8f52c997445ee4',
+          '3af79e5941776d10da5427bfaa733b15',
+          'f4abf0d603045a3403133d25ab0fc60d',
+          '457d68dc078349635f3360fdc56d5a31',
+          'b89b4b8d9209c77531e7978cad4e088b',
+          '32d5f316d9357a3bfed17c3547e5aceb',
+          'cbc518e46c68e7cda3aaf6c2898d3b24',
+          'fe2745f02d1f287eacb965d218a3e653',
+          '5ea2d95b5a2d46a23cb5dacd0271dff7 ',
+          ]
+train_df=train_df[~train_df['deviceid'].isin(too_many)]
+print("train_df.shape",train_df.shape)
+
 train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
@@ -364,7 +380,7 @@ def get_tag_fea():
 
 
 def get_cvr_fea(data):
-    cat_list = [i for i in train_df.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
+    cat_list = cate_cols+['deviceid']
     print("cat_list", cat_list)
     # 类别特征五折转化率特征
     print("转化率特征....")
