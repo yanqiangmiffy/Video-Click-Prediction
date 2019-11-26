@@ -59,8 +59,8 @@ too_many=['5b02f07eafae65fdbf9760867bcd8856',
           'fe2745f02d1f287eacb965d218a3e653',
           '5ea2d95b5a2d46a23cb5dacd0271dff7 ',
           ]
-# train_df=train_df[~train_df['deviceid'].isin(too_many)]
-# print("train_df.shape",train_df.shape)
+train_df=train_df[~train_df['deviceid'].isin(too_many)]
+print("train_df.shape",train_df.shape)
 
 train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_csv(root / 'test.csv')
@@ -334,7 +334,7 @@ def get_outertag_fea():
                         all_outertag[tmp[0]] = 0
                         all_outertag[tmp[0]] += float(tmp[1])
     top_outertag = {}
-    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:20]:
+    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:10]:
         top_outertag[tag] = score
     for tag in top_outertag:
         grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_outertag[tag] if tag in x else 0)
@@ -364,7 +364,7 @@ def get_tag_fea():
                         all_tag[tmp[0]] = 0
                         all_tag[tmp[0]] += float(tmp[1])
     top_tag = {}
-    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:50]:
+    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:25]:
         top_tag[tag] = score
 
     for tag in top_tag:
@@ -397,19 +397,19 @@ def get_cvr_fea(data):
 
 
 df = get_cvr_fea(df)
-# df = get_news_fea(df)
+df = get_news_fea(df)
 # df = get_ctr_fea(df)
-# df = get_combination_fea(df)
+df = get_combination_fea(df)
 #
-# app_fea = get_app_fea()
-# df = pd.merge(df, app_fea, on='deviceid', how='left')
-# del app_fea
-# gc.collect()
-#
-# user_fea = get_user_fea()
-# df = pd.merge(df, user_fea, on='deviceid', how='left')
-# del user_fea
-# gc.collect()
+app_fea = get_app_fea()
+df = pd.merge(df, app_fea, on='deviceid', how='left')
+del app_fea
+gc.collect()
+
+user_fea = get_user_fea()
+df = pd.merge(df, user_fea, on='deviceid', how='left')
+del user_fea
+gc.collect()
 
 outertag_fea = get_outertag_fea()
 df = pd.merge(df, outertag_fea, on='deviceid', how='left')
