@@ -95,8 +95,8 @@ def split_data(train, test, user, app, type='train'):
         x = [float(i.split(':')[1]) for i in x if len(i.split(':')) > 1]
         return sum(x)
 
-    # df['tag_sum'] = df['tag'].apply(lambda x: tag_score_sum(x))
-    # df['outertag_sum'] = df['outertag'].apply(lambda x: tag_score_sum(x))
+    df['tag_sum'] = df['tag'].apply(lambda x: tag_score_sum(x))
+    df['outertag_sum'] = df['outertag'].apply(lambda x: tag_score_sum(x))
 
     # 类别特征count特征
     cat_list = [i for i in df.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
