@@ -22,11 +22,11 @@ pd.set_option('display.max_columns', None)
 
 scaler = StandardScaler()
 
-train = pd.read_csv('../data/train.csv')
-test = pd.read_csv('../data/test.csv')
-user = pd.read_csv('../data/user.csv')
-app = pd.read_csv('../data/app.csv')
-sample = pd.read_csv('../data/sample.csv')
+train = pd.read_csv('data/train.csv')
+test = pd.read_csv('data/test.csv')
+user = pd.read_csv('data/user.csv')
+app = pd.read_csv('data/app.csv')
+sample = pd.read_csv('data/sample.csv')
 
 train['ts'] = train['ts'].apply(lambda x: datetime.fromtimestamp(x / 1000))
 test['ts'] = test['ts'].apply(lambda x: datetime.fromtimestamp(x / 1000))
