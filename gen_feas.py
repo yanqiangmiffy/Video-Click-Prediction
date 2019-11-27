@@ -59,8 +59,8 @@ too_many=['5b02f07eafae65fdbf9760867bcd8856',
           'fe2745f02d1f287eacb965d218a3e653',
           '5ea2d95b5a2d46a23cb5dacd0271dff7 ',
           ]
-train_df=train_df[~train_df['deviceid'].isin(too_many)]
-print("train_df.shape",train_df.shape)
+# train_df=train_df[~train_df['deviceid'].isin(too_many)]
+# print("train_df.shape",train_df.shape)
 
 train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_csv(root / 'test.csv')
