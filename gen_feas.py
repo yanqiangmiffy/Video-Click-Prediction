@@ -375,8 +375,8 @@ def get_tag_fea():
     return grouped_df
 
 
-def get_cvr_fea(data):
-    cat_list = cate_cols+['deviceid']
+def get_cvr_fea(data,cat_list =None):
+
     print("cat_list", cat_list)
     # 类别特征五折转化率特征
     print("转化率特征....")
@@ -396,7 +396,6 @@ def get_cvr_fea(data):
     return data
 
 
-df = get_cvr_fea(df)
 df = get_news_fea(df)
 # df = get_ctr_fea(df)
 df = get_combination_fea(df)
@@ -430,6 +429,8 @@ user = user_df.drop_duplicates('deviceid')
 df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
                   how='left', on='deviceid')
 del user
+
+df = get_cvr_fea(df, cate_cols+['deviceid','level', 'personidentification', 'followscore', 'personalscore', 'gender'])
 
 df = reduce_mem_usage(df)
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
