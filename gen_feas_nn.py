@@ -445,7 +445,7 @@ df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 
 del user
 
 df = get_cvr_fea(df, cat_list=cate_cols+['deviceid','level', 'personidentification', 'followscore', 'personalscore', 'gender'])
-
+df.fillna(0,inplace=True)
 
 df = reduce_mem_usage(df)
 
