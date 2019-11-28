@@ -124,7 +124,7 @@ def split_data(train, test, user, app, type='train'):
 
     for feas in [('guid', 'netmodel'), ('guid', 'osversion'), ('guid', 'device_version')]:
         i, j = feas
-        train['%s_%s_unique'] = df.groupby([i])[j].transform('nunique')
+        df['%s_%s_unique'%(i, j)] = df.groupby([i])[j].transform('nunique')
 
     lb_feas = ['app_version', 'device_vendor', 'device_version', 'deviceid', 'guid', 'netmodel', 'newsid', 'osversion',
                'timestamp', 'outertag', 'tag', 'applist', 'ts']

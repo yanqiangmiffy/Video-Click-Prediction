@@ -87,7 +87,7 @@ def get_fea(train, test, user, app):
 
     for feas in [('guid', 'netmodel'), ('guid', 'osversion'), ('guid', 'device_version')]:
         i, j = feas
-        train['%s_%s_unique'] = df.groupby([i])[j].transform('nunique')
+        df['%s_%s_unique'%(i, j)] = df.groupby([i])[j].transform('nunique')
 
     def tag_score_sum(x):
         x = str(x)
