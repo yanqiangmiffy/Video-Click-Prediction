@@ -43,9 +43,9 @@ def statics():
 
 # 加载数据
 root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')
+train_df = pd.read_csv(root / 'train.csv')[:10000]
 train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')
+test_df = pd.read_csv(root / 'test.csv')[:10000]
 test_df['target'] = 0
 
 # 将时间戳转为datetime
@@ -406,7 +406,6 @@ def get_cvr_fea(data,cat_list =None):
 
 
 
-get_cvr_fea(df)
 df=get_news_fea(df)
 # df = get_ctr_fea(df)
 df=get_combination_fea(df)
@@ -445,7 +444,7 @@ df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 
                   how='left', on='deviceid')
 del user
 
-df = get_cvr_fea(df, cate_cols+['deviceid','level', 'personidentification', 'followscore', 'personalscore', 'gender'])
+df = get_cvr_fea(df, cat_list=cate_cols+['deviceid','level', 'personidentification', 'followscore', 'personalscore', 'gender'])
 
 
 df = reduce_mem_usage(df)
