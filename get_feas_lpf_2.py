@@ -141,13 +141,13 @@ def split_data(train, test, user, app, type='train'):
         return df[len(train):], no_features
 
 
-train, no_features = split_data(train, test, user, app, type='train')
+train_df, no_features = split_data(train, test, user, app, type='train')
 print(train.shape)
-test, no_features = split_data(train[train['ts_day'] != 8], test, user, app, type='test')
+test_df, no_features = split_data(train[train['ts_day'] != 8], test, user, app, type='test')
 print(test.shape)
 
 features = [fea for fea in train.columns if fea not in no_features]
 
 def load_data():
-    return train, test, no_features, features
+    return train_df, test_df, no_features, features
 
