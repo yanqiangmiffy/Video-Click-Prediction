@@ -384,26 +384,28 @@ def get_tag_fea():
     return grouped_df
 
 
-def get_cvr_fea(df):
+def get_cvr_fea(data,cat_list =None):
+
+    print("cat_list", cat_list)
     # 类别特征五折转化率特征
     print("转化率特征....")
-    df['ID'] = df.index
-    df['fold'] = df['ID'] % 5
-    df.loc[df.target.isnull(), 'fold'] = 5
+    data['ID'] = data.index
+    data['fold'] = data['ID'] % 5
+    data.loc[data.target.isnull(), 'fold'] = 5
     target_feat = []
-    for i in tqdm(cate_cols + ['day', 'hour', 'dayofweek', 'deviceid']):
+    for i in tqdm(cat_list):
         target_feat.extend([i + '_mean_last_1'])
-        df[i + '_mean_last_1'] = None
+        data[i + '_mean_last_1'] = None
         for fold in range(6):
-            df.loc[df['fold'] == fold, i + '_mean_last_1'] = df[df['fold'] == fold][i].map(
-                df[(df['fold'] != fold) & (df['fold'] != 5)].groupby(i)['target'].mean()
+            data.loc[data['fold'] == fold, i + '_mean_last_1'] = data[data['fold'] == fold][i].map(
+                data[(data['fold'] != fold) & (data['fold'] != 5)].groupby(i)['target'].mean()
             )
-        df[i + '_mean_last_1'] = df[i + '_mean_last_1'].astype(float)
+        data[i + '_mean_last_1'] = data[i + '_mean_last_1'].astype(float)
 
-    return df
+    return data
 
 
-get_cvr_fea(df)
+
 df=get_news_fea(df)
 # df = get_ctr_fea(df)
 df=get_combination_fea(df)
@@ -433,6 +435,17 @@ features = [fea for fea in df.columns if fea not in no_features]
 for col in features:
     print(col)
     df[col] = df[col].fillna(-1)
+
+
+
+
+user = user_df.drop_duplicates('deviceid')
+df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
+                  how='left', on='deviceid')
+del user
+
+df = get_cvr_fea(df, cat_list=cate_cols+['deviceid','level', 'personidentification', 'followscore', 'personalscore', 'gender'])
+df.fillna(0,inplace=True)
 
 df = reduce_mem_usage(df)
 

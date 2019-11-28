@@ -81,7 +81,7 @@ def build_embedding_network():
         cate_input = Input(shape=(1,))
         input_dim = len(col_vals_dict[embed_cols[i]])
         if input_dim > 1000:
-            output_dim = 50
+            output_dim = 64
         else:
             output_dim = (len(col_vals_dict[embed_cols[i]]) // 2) + 1
 
