@@ -62,7 +62,7 @@ def get_fea(train, test, user, app):
     df['ts_hour'] = df['ts'].apply(lambda x: x.hour)
 
     # 类别特征count特征
-    cat_list = [i for i in train.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
+    cat_list = [i for i in df.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
 
     no_features = ['id', 'target', 'timestamp', 'ID', 'fold']
 
