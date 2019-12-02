@@ -14,7 +14,8 @@ from tqdm import tqdm
 import gc
 
 # from get_feas_lpf import load_data
-from get_feas_lpf_2 import load_data
+# from get_feas_lpf_2 import load_data
+from get_feas_lpf_3 import load_data
 from utils import *
 
 
