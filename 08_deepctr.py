@@ -176,7 +176,7 @@ data['ts_after_group'] = ts_group
 data['ts_after_len'] = ts_len
 data['ts_after_rank'] = group['ts'].apply(lambda x: (-x).rank())
 data['ts_after_rank'] = (data['ts_after_rank'] - 1) / (data['ts_after_len'] - 1)
-del group,ts_group
+del group, ts_group
 
 data.loc[data['ts_before_rank'] == np.inf, 'ts_before_rank'] = 0
 data.loc[data['ts_after_rank'] == np.inf, 'ts_after_rank'] = 0
@@ -199,7 +199,7 @@ gps['applist_weight'] = gps['applist_len'].apply(lambda x: x * [1])
 gps.drop('applist', axis=1, inplace=True)
 print(len(key2index))
 data = pd.merge(data, gps, on=['deviceid'], how='left')
-del key2index,gps
+del key2index, gps
 
 #  ['deviceid', 'guid']唯一， 'deviceid'不唯一
 user = pd.read_pickle(path_pickle + 'user.pickle')
@@ -233,7 +233,7 @@ group = data[['deviceid', 'lat', 'lng']].groupby('deviceid')
 gp = group[['lat', 'lng']].agg(lambda x: stats.mode(x)[0][0]).reset_index()
 gp.columns = ['deviceid', 'lat_mode', 'lng_mode']
 data = pd.merge(data, gp, on='deviceid', how='left')
-del group,gp
+del group, gp
 data['dist'] = np.log((data['lat'] - data['lat_mode']) **
                       2 + (data['lng'] - data['lng_mode']) ** 2 + 1)
 data['dist_int'] = np.rint(data['dist'])
@@ -246,166 +246,166 @@ data.loc[data['personalscore'].isna(), 'personalscore'] = data['personalscore'].
 
 data = reduce_mem_usage(data)
 data.to_pickle(path_pickle + 'data.pickle')
-# data = pd.read_pickle(path_pickle + 'data.pickle')
-#
-# cate_cols = ['deviceid', 'guid', 'pos', 'app_version',
-#              'device_vendor', 'netmodel', 'osversion',
-#              'device_version', 'hour', 'minute', 'second',
-#              'personalscore', 'gender', 'level_int', 'dist_int',
-#              'lat_int', 'lng_int', 'gap_before_int', 'ts_before_group',
-#              'time1', 'gap_after_int', 'ts_after_group',
-#              'personidentification']
-# drop_cols = ['id', 'target', 'timestamp', 'ts', 'isTest', 'day',
-#              'lat_mode', 'lng_mode', 'abtarget', 'applist_key',
-#              'applist_weight', 'tag_key', 'tag_weight', 'outertag_key',
-#              'outertag_weight', 'newsid']
-#
-# fillna_cols = ['outertag_len', 'tag_len', 'lng', 'lat', 'level',
-#                'followscore', 'dist', 'applist_len', 'ts_before_rank',
-#                'ts_after_rank']
-# data[fillna_cols] = data[fillna_cols].fillna(0)
-#
-# train_index = data[data['isTest'] != 1].index
-# train_index, val_index = train_test_split(train_index, test_size=0.2)
-# test_index = data[data['isTest'] == 1].index
-# isVarlen = True
-#
-# key2index_len = {'applist': 25730, 'tag': 32539, 'outertag': 192}
-# varlen_list = {}
-# max_len = {}
-# for i in ['applist', 'tag', 'outertag']:
-#     max_len[i] = int(data['%s_len' % i].max())
-# #  pad_sequences 变长特征
-# if isVarlen:
-#     try:
-#         print('read pad_sequences')
-#         for i in ['applist', 'tag', 'outertag']:
-#             varlen_list['%s_key' % i] = np.load(path_npy + '%s_key.npy' % i)
-#             varlen_list['%s_weight' % i] = np.load(
-#                 path_npy + '%s_weight.npy' % i)
-#             print(i)
-#     except:
-#         print('pad_sequences')
-#         for i in ['applist', 'tag', 'outertag']:
-#             data.loc[data['%s_key' % i].isna(), '%s_key' % i] = data.loc[data['%s_key' %
-#                                                                               i].isna(), '%s_key' % i].apply(
-#                 lambda x: [0])
-#             data.loc[data['%s_weight' % i].isna(), '%s_weight' % i] = data.loc[data['%s_weight' %
-#                                                                                     i].isna(), '%s_weight' % i].apply(
-#                 lambda x: [0])
-#             varlen_list['%s_key' % i] = pad_sequences(np.array(
-#                 data['%s_key' % i]), maxlen=max_len[i], padding='post')
-#             varlen_list['%s_weight' % i] = pad_sequences(np.array(
-#                 data['%s_weight' % i]), maxlen=max_len[i], padding='post').reshape(len(data), max_len[i], 1)
-#             np.save(path_npy + '%s_key.npy' % i, varlen_list['%s_key' % i])
-#             np.save(path_npy + '%s_weight.npy' %
-#                     i, varlen_list['%s_weight' % i])
-#             print(i)
-# else:
-#     pass
-#
-# sparse_features = cate_cols
-# dense_features = [i for i in data.columns if (
-#         (i not in cate_cols) & (i not in drop_cols))]
-# target = 'target'
-#
-# # 1.Label Encoding for sparse features,and do simple Transformation for dense features
-# for i in (sparse_features):
-#     encoder = LabelEncoder()
-#     data[i] = encoder.fit_transform(data[i])
-#
-# scaler = StandardScaler()
-# data[dense_features] = scaler.fit_transform(data[dense_features])
-# data = reduce_mem_usage(data)
-#
-# # 2.count #unique features for each sparse field,and record dense feature field name
-# fixlen_feature_columns = [SparseFeat(feat, data[feat].nunique())
-#                           for feat in sparse_features] + [DenseFeat(feat, 1, )
-#                                                           for feat in dense_features]
-#
-# if isVarlen:
-#     varlen_feature_columns = [VarLenSparseFeat('%s_key' % i, key2index_len[i] + 1, max_len[i],
-#                                                'mean', weight_name='%s_weight' % i) for i in
-#                               ['applist', 'tag', 'outertag']]
-# else:
-#     varlen_feature_columns = []
-#
-# dnn_feature_columns = fixlen_feature_columns + varlen_feature_columns
-# linear_feature_columns = fixlen_feature_columns + varlen_feature_columns
-#
-# feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
-#
-# # 3.generate input data for model
-# train = data.loc[train_index]
-# val = data.loc[val_index]
-# test = data.loc[test_index]
-#
-# train_model_input = {name: train[name] for name in feature_names}
-# val_model_input = {name: val[name] for name in feature_names}
-# test_model_input = {name: test[name] for name in feature_names}
-#
-# if isVarlen:
-#     for i in ['applist', 'tag', 'outertag']:
-#         for j in ['weight', 'key']:
-#             print('%s_%s' % (i, j))
-#             train_model_input['%s_%s' % (i, j)] = varlen_list['%s_%s' % (i, j)][train_index]
-#             val_model_input['%s_%s' % (i, j)] = varlen_list['%s_%s' % (i, j)][val_index]
-#             test_model_input['%s_%s' % (i, j)] = varlen_list['%s_%s' % (i, j)][test_index]
-#             del varlen_list['%s_%s' % (i, j)]
-#
-# # 4.Define Model, train, predict and evaluate
-# checkpoint_path = path_model + "cp.ckpt"
-# checkpoint_dir = os.path.dirname(checkpoint_path)
-# cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
-#                                                  save_weights_only=True,
-#                                                  verbose=1)
-#
-# model = DeepFM(linear_feature_columns, dnn_feature_columns, embedding_size=8,
-#                use_fm=True, dnn_hidden_units=(256, 256, 256), l2_reg_linear=0.001,
-#                l2_reg_embedding=0.001, l2_reg_dnn=0, init_std=0.0001, seed=1024,
-#                dnn_dropout=0.5, dnn_activation='relu', dnn_use_bn=True, task='binary')
-# try:
-#     model.load_weights(checkpoint_path);
-#     print('load weights')
-# except:
-#     pass
-# model.compile(optimizer="adam", loss="binary_crossentropy",
-#               metrics=['accuracy', 'AUC'])
-# history = model.fit(train_model_input, train[target],
-#                     batch_size=8192, epochs=5, verbose=2, shuffle=True,
-#                     callbacks=[cp_callback],
-#                     validation_data=(val_model_input, val[target]))
-#
-# data['predict'] = 0
-# data.loc[train_index, 'predict'] = model.predict(
-#     train_model_input, batch_size=8192)
-# data.loc[val_index, 'predict'] = model.predict(
-#     val_model_input, batch_size=8192)
-# data.loc[test_index, 'predict'] = model.predict(
-#     test_model_input, batch_size=8192)
-#
-# p = 88.5
-# pred_val = data.loc[val_index, 'predict']
-# print("val LogLoss", round(log_loss(val[target], pred_val), 4))
-# threshold_val = round(np.percentile(pred_val, p), 4)
-# pred_val2 = [1 if i > threshold_val else 0 for i in pred_val]
-# print("val F1 >%s" % threshold_val, round(
-#     f1_score(val[target], pred_val2), 4))
-#
-# pred_train_val = data.loc[data['isTest'] != 1, 'predict']
-# print("train_val LogLoss", round(log_loss(data.loc[data['isTest'] != 1, 'target'], pred_train_val), 4))
-# threshold_train_val = round(np.percentile(pred_train_val, p), 4)
-# pred_train_val2 = [1 if i > threshold_train_val else 0 for i in pred_train_val]
-# print("train_val F1 >%s" % threshold_train_val, round(
-#     f1_score(data.loc[data['isTest'] != 1, 'target'], pred_train_val2), 4))
-#
-# pred_test = data.loc[test_index, 'predict']
-# threshold_test = round(np.percentile(pred_test, p), 4)
-# pred_test2 = [1 if i > threshold_test else 0 for i in pred_test]
-# sub = test[['id', 'target']]
-# sub['target'] = pred_test2
-# sub.to_csv(path_sub + 'sub.csv', index=False)
-#
-# sub_prob=test[['id', 'target']]
-# sub_prob['target'] = pred_test
-# sub_prob.to_csv(path_sub + 'sub_prob.csv', index=False)
+data = pd.read_pickle(path_pickle + 'data.pickle')
+
+cate_cols = ['deviceid', 'guid', 'pos', 'app_version',
+             'device_vendor', 'netmodel', 'osversion',
+             'device_version', 'hour', 'minute', 'second',
+             'personalscore', 'gender', 'level_int', 'dist_int',
+             'lat_int', 'lng_int', 'gap_before_int', 'ts_before_group',
+             'time1', 'gap_after_int', 'ts_after_group',
+             'personidentification']
+drop_cols = ['id', 'target', 'timestamp', 'ts', 'isTest', 'day',
+             'lat_mode', 'lng_mode', 'abtarget', 'applist_key',
+             'applist_weight', 'tag_key', 'tag_weight', 'outertag_key',
+             'outertag_weight', 'newsid']
+
+fillna_cols = ['outertag_len', 'tag_len', 'lng', 'lat', 'level',
+               'followscore', 'dist', 'applist_len', 'ts_before_rank',
+               'ts_after_rank']
+data[fillna_cols] = data[fillna_cols].fillna(0)
+
+train_index = data[data['isTest'] != 1].index
+train_index, val_index = train_test_split(train_index, test_size=0.2)
+test_index = data[data['isTest'] == 1].index
+isVarlen = True
+
+key2index_len = {'applist': 25730, 'tag': 32539, 'outertag': 192}
+varlen_list = {}
+max_len = {}
+for i in ['applist', 'tag', 'outertag']:
+    max_len[i] = int(data['%s_len' % i].max())
+#  pad_sequences 变长特征
+if isVarlen:
+    try:
+        print('read pad_sequences')
+        for i in ['applist', 'tag', 'outertag']:
+            varlen_list['%s_key' % i] = np.load(path_npy + '%s_key.npy' % i)
+            varlen_list['%s_weight' % i] = np.load(
+                path_npy + '%s_weight.npy' % i)
+            print(i)
+    except:
+        print('pad_sequences')
+        for i in ['applist', 'tag', 'outertag']:
+            data.loc[data['%s_key' % i].isna(), '%s_key' % i] = data.loc[data['%s_key' %
+                                                                              i].isna(), '%s_key' % i].apply(
+                lambda x: [0])
+            data.loc[data['%s_weight' % i].isna(), '%s_weight' % i] = data.loc[data['%s_weight' %
+                                                                                    i].isna(), '%s_weight' % i].apply(
+                lambda x: [0])
+            varlen_list['%s_key' % i] = pad_sequences(np.array(
+                data['%s_key' % i]), maxlen=max_len[i], padding='post')
+            varlen_list['%s_weight' % i] = pad_sequences(np.array(
+                data['%s_weight' % i]), maxlen=max_len[i], padding='post').reshape(len(data), max_len[i], 1)
+            np.save(path_npy + '%s_key.npy' % i, varlen_list['%s_key' % i])
+            np.save(path_npy + '%s_weight.npy' %
+                    i, varlen_list['%s_weight' % i])
+            print(i)
+else:
+    pass
+
+sparse_features = cate_cols
+dense_features = [i for i in data.columns if (
+        (i not in cate_cols) & (i not in drop_cols))]
+target = 'target'
+
+# 1.Label Encoding for sparse features,and do simple Transformation for dense features
+for i in (sparse_features):
+    encoder = LabelEncoder()
+    data[i] = encoder.fit_transform(data[i])
+
+scaler = StandardScaler()
+data[dense_features] = scaler.fit_transform(data[dense_features])
+data = reduce_mem_usage(data)
+
+# 2.count #unique features for each sparse field,and record dense feature field name
+fixlen_feature_columns = [SparseFeat(feat, data[feat].nunique())
+                          for feat in sparse_features] + [DenseFeat(feat, 1, )
+                                                          for feat in dense_features]
+
+if isVarlen:
+    varlen_feature_columns = [VarLenSparseFeat('%s_key' % i, key2index_len[i] + 1, max_len[i],
+                                               'mean', weight_name='%s_weight' % i) for i in
+                              ['applist', 'tag', 'outertag']]
+else:
+    varlen_feature_columns = []
+
+dnn_feature_columns = fixlen_feature_columns + varlen_feature_columns
+linear_feature_columns = fixlen_feature_columns + varlen_feature_columns
+
+feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
+
+# 3.generate input data for model
+train = data.loc[train_index]
+val = data.loc[val_index]
+test = data.loc[test_index]
+
+train_model_input = {name: train[name] for name in feature_names}
+val_model_input = {name: val[name] for name in feature_names}
+test_model_input = {name: test[name] for name in feature_names}
+
+if isVarlen:
+    for i in ['applist', 'tag', 'outertag']:
+        for j in ['weight', 'key']:
+            print('%s_%s' % (i, j))
+            train_model_input['%s_%s' % (i, j)] = varlen_list['%s_%s' % (i, j)][train_index]
+            val_model_input['%s_%s' % (i, j)] = varlen_list['%s_%s' % (i, j)][val_index]
+            test_model_input['%s_%s' % (i, j)] = varlen_list['%s_%s' % (i, j)][test_index]
+            del varlen_list['%s_%s' % (i, j)]
+
+# 4.Define Model, train, predict and evaluate
+checkpoint_path = path_model + "cp.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
+cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1)
+
+model = DeepFM(linear_feature_columns, dnn_feature_columns, embedding_size=8,
+               use_fm=True, dnn_hidden_units=(256, 256, 256), l2_reg_linear=0.001,
+               l2_reg_embedding=0.001, l2_reg_dnn=0, init_std=0.0001, seed=1024,
+               dnn_dropout=0.5, dnn_activation='relu', dnn_use_bn=True, task='binary')
+try:
+    model.load_weights(checkpoint_path);
+    print('load weights')
+except:
+    pass
+model.compile(optimizer="adam", loss="binary_crossentropy",
+              metrics=['accuracy', 'AUC'])
+history = model.fit(train_model_input, train[target],
+                    batch_size=8192, epochs=5, verbose=2, shuffle=True,
+                    callbacks=[cp_callback],
+                    validation_data=(val_model_input, val[target]))
+
+data['predict'] = 0
+data.loc[train_index, 'predict'] = model.predict(
+    train_model_input, batch_size=8192)
+data.loc[val_index, 'predict'] = model.predict(
+    val_model_input, batch_size=8192)
+data.loc[test_index, 'predict'] = model.predict(
+    test_model_input, batch_size=8192)
+
+p = 88.5
+pred_val = data.loc[val_index, 'predict']
+print("val LogLoss", round(log_loss(val[target], pred_val), 4))
+threshold_val = round(np.percentile(pred_val, p), 4)
+pred_val2 = [1 if i > threshold_val else 0 for i in pred_val]
+print("val F1 >%s" % threshold_val, round(
+    f1_score(val[target], pred_val2), 4))
+
+pred_train_val = data.loc[data['isTest'] != 1, 'predict']
+print("train_val LogLoss", round(log_loss(data.loc[data['isTest'] != 1, 'target'], pred_train_val), 4))
+threshold_train_val = round(np.percentile(pred_train_val, p), 4)
+pred_train_val2 = [1 if i > threshold_train_val else 0 for i in pred_train_val]
+print("train_val F1 >%s" % threshold_train_val, round(
+    f1_score(data.loc[data['isTest'] != 1, 'target'], pred_train_val2), 4))
+
+pred_test = data.loc[test_index, 'predict']
+threshold_test = round(np.percentile(pred_test, p), 4)
+pred_test2 = [1 if i > threshold_test else 0 for i in pred_test]
+sub = test[['id', 'target']]
+sub['target'] = pred_test2
+sub.to_csv(path_sub + 'sub.csv', index=False)
+
+sub_prob = test[['id', 'target']]
+sub_prob['target'] = pred_test
+sub_prob.to_csv(path_sub + 'sub_prob.csv', index=False)
