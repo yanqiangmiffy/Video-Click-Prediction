@@ -69,49 +69,49 @@ def get_fea(train, test, user, app):
     df['ts_diff'] = df['ts_diff']/10000
     print(df[['ts', 'ts_1', 'ts_diff']])
 
-    # 把相隔广告曝光相隔时间较短的数据视为同一个事件，这里暂取间隔为3min
-    # rank按时间排序同一个事件中每条数据发生的前后关系
-    group = df.groupby('deviceid')
-    df['gap_before'] = group['ts'].shift(0) - group['ts'].shift(1)
-    df['gap_before'] = df['gap_before'].fillna(3 * 60 * 1000)
-    INDEX = df[df['gap_before'] > (3 * 60 * 1000 - 1)].index
-    df['gap_before'] = np.log(df['gap_before'] // 1000 + 1)
-    df['gap_before_int'] = np.rint(df['gap_before'])
-    LENGTH = len(INDEX)
-    ts_group = []
-    ts_len = []
-    for i in tqdm(range(1, LENGTH)):
-        ts_group += [i - 1] * (INDEX[i] - INDEX[i - 1])
-        ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
-    ts_group += [LENGTH - 1] * (len(df) - INDEX[LENGTH - 1])
-    ts_len += [(len(df) - INDEX[LENGTH - 1])] * (len(df) - INDEX[LENGTH - 1])
-    df['ts_before_group'] = ts_group
-    df['ts_before_len'] = ts_len
-    df['ts_before_rank'] = group['ts'].apply(lambda x: (x).rank())
-    df['ts_before_rank'] = (df['ts_before_rank'] - 1) / \
-                             (df['ts_before_len'] - 1)
-
-    group = df.groupby('deviceid')
-    df['gap_after'] = group['ts'].shift(-1) - group['ts'].shift(0)
-    df['gap_after'] = df['gap_after'].fillna(3 * 60 * 1000)
-    INDEX = df[df['gap_after'] > (3 * 60 * 1000 - 1)].index
-    df['gap_after'] = np.log(df['gap_after'] // 1000 + 1)
-    df['gap_after_int'] = np.rint(df['gap_after'])
-    LENGTH = len(INDEX)
-    ts_group = [0] * (INDEX[0] + 1)
-    ts_len = [INDEX[0]] * (INDEX[0] + 1)
-    for i in tqdm(range(1, LENGTH)):
-        ts_group += [i] * (INDEX[i] - INDEX[i - 1])
-        ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
-    df['ts_after_group'] = ts_group
-    df['ts_after_len'] = ts_len
-    df['ts_after_rank'] = group['ts'].apply(lambda x: (-x).rank())
-    df['ts_after_rank'] = (df['ts_after_rank'] - 1) / (df['ts_after_len'] - 1)
-
-    df.loc[df['ts_before_rank'] == np.inf, 'ts_before_rank'] = 0
-    df.loc[df['ts_after_rank'] == np.inf, 'ts_after_rank'] = 0
-    df['ts_before_len'] = np.log(df['ts_before_len'] + 1)
-    df['ts_after_len'] = np.log(df['ts_after_len'] + 1)
+    # # 把相隔广告曝光相隔时间较短的数据视为同一个事件，这里暂取间隔为3min
+    # # rank按时间排序同一个事件中每条数据发生的前后关系
+    # group = df.groupby('deviceid')
+    # df['gap_before'] = group['ts'].shift(0) - group['ts'].shift(1)
+    # df['gap_before'] = df['gap_before'].fillna(3 * 60 * 1000)
+    # INDEX = df[df['gap_before'] > (3 * 60 * 1000 - 1)].index
+    # df['gap_before'] = np.log(df['gap_before'] // 1000 + 1)
+    # df['gap_before_int'] = np.rint(df['gap_before'])
+    # LENGTH = len(INDEX)
+    # ts_group = []
+    # ts_len = []
+    # for i in tqdm(range(1, LENGTH)):
+    #     ts_group += [i - 1] * (INDEX[i] - INDEX[i - 1])
+    #     ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
+    # ts_group += [LENGTH - 1] * (len(df) - INDEX[LENGTH - 1])
+    # ts_len += [(len(df) - INDEX[LENGTH - 1])] * (len(df) - INDEX[LENGTH - 1])
+    # df['ts_before_group'] = ts_group
+    # df['ts_before_len'] = ts_len
+    # df['ts_before_rank'] = group['ts'].apply(lambda x: (x).rank())
+    # df['ts_before_rank'] = (df['ts_before_rank'] - 1) / \
+    #                          (df['ts_before_len'] - 1)
+    #
+    # group = df.groupby('deviceid')
+    # df['gap_after'] = group['ts'].shift(-1) - group['ts'].shift(0)
+    # df['gap_after'] = df['gap_after'].fillna(3 * 60 * 1000)
+    # INDEX = df[df['gap_after'] > (3 * 60 * 1000 - 1)].index
+    # df['gap_after'] = np.log(df['gap_after'] // 1000 + 1)
+    # df['gap_after_int'] = np.rint(df['gap_after'])
+    # LENGTH = len(INDEX)
+    # ts_group = [0] * (INDEX[0] + 1)
+    # ts_len = [INDEX[0]] * (INDEX[0] + 1)
+    # for i in tqdm(range(1, LENGTH)):
+    #     ts_group += [i] * (INDEX[i] - INDEX[i - 1])
+    #     ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
+    # df['ts_after_group'] = ts_group
+    # df['ts_after_len'] = ts_len
+    # df['ts_after_rank'] = group['ts'].apply(lambda x: (-x).rank())
+    # df['ts_after_rank'] = (df['ts_after_rank'] - 1) / (df['ts_after_len'] - 1)
+    #
+    # df.loc[df['ts_before_rank'] == np.inf, 'ts_before_rank'] = 0
+    # df.loc[df['ts_after_rank'] == np.inf, 'ts_after_rank'] = 0
+    # df['ts_before_len'] = np.log(df['ts_before_len'] + 1)
+    # df['ts_after_len'] = np.log(df['ts_after_len'] + 1)
 
 
 
