@@ -129,7 +129,7 @@ def get_fea(train, test, user, app):
     cat_list.append('ts_day')
     cat_list.append('ts_hour')
 
-    no_features = ['id', 'target', 'timestamp', 'ID', 'fold', 'is_test']
+    no_features = ['id', 'target', 'timestamp', 'ID', 'fold', 'is_test', 'ts_1']
 
     print(cat_list)
     print(df[cat_list])
