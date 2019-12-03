@@ -398,3 +398,7 @@ pred_test2 = [1 if i > threshold_test else 0 for i in pred_test]
 sub = test[['id', 'target']]
 sub['target'] = pred_test2
 sub.to_csv(path_sub + 'sub.csv', index=False)
+
+sub_prob=test[['id', 'target']]
+sub_prob['target'] = pred_test
+sub_prob.to_csv(path_sub + 'sub_prob.csv', index=False)
