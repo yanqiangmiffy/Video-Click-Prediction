@@ -46,19 +46,19 @@ def statics():
 # 加载数据
 root = Path('./data/')
 train_df = pd.read_csv(root / 'train.csv')
-print("train_df.shape",train_df.shape)
+print("train_df.shape", train_df.shape)
 # 删除deviceid出现次数过多的设备
-too_many=['5b02f07eafae65fdbf9760867bcd8856',
-          '29078bf9ecff29c67c8f52c997445ee4',
-          '3af79e5941776d10da5427bfaa733b15',
-          'f4abf0d603045a3403133d25ab0fc60d',
-          '457d68dc078349635f3360fdc56d5a31',
-          'b89b4b8d9209c77531e7978cad4e088b',
-          '32d5f316d9357a3bfed17c3547e5aceb',
-          'cbc518e46c68e7cda3aaf6c2898d3b24',
-          'fe2745f02d1f287eacb965d218a3e653',
-          '5ea2d95b5a2d46a23cb5dacd0271dff7 ',
-          ]
+too_many = ['5b02f07eafae65fdbf9760867bcd8856',
+            '29078bf9ecff29c67c8f52c997445ee4',
+            '3af79e5941776d10da5427bfaa733b15',
+            'f4abf0d603045a3403133d25ab0fc60d',
+            '457d68dc078349635f3360fdc56d5a31',
+            'b89b4b8d9209c77531e7978cad4e088b',
+            '32d5f316d9357a3bfed17c3547e5aceb',
+            'cbc518e46c68e7cda3aaf6c2898d3b24',
+            'fe2745f02d1f287eacb965d218a3e653',
+            '5ea2d95b5a2d46a23cb5dacd0271dff7 ',
+            ]
 # train_df=train_df[~train_df['deviceid'].isin(too_many)]
 # print("train_df.shape",train_df.shape)
 
@@ -94,7 +94,6 @@ preprocess_ts(df)
 # statics()
 app_df = pd.read_csv(root / 'app.csv')
 user_df = pd.read_csv(root / 'user.csv')
-
 
 # print(df)
 # print(df.info())
@@ -377,8 +376,7 @@ def get_tag_fea():
     return grouped_df
 
 
-def get_cvr_fea(data,cat_list =None):
-
+def get_cvr_fea(data, cat_list=None):
     print("cat_list", cat_list)
     # 类别特征五折转化率特征
     print("转化率特征....")
@@ -429,10 +427,11 @@ gc.collect()
 
 user = user_df.drop_duplicates('deviceid')
 df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
-                  how='left', on='deviceid')
+              how='left', on='deviceid')
 del user
 
-df = get_cvr_fea(df, cate_cols+['deviceid','level', 'personidentification', 'followscore', 'personalscore', 'gender'])
+df = get_cvr_fea(df,
+                 cate_cols + ['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender'])
 
 df['day_diff'] = np.sign(df[['day']].diff().fillna(0))
 df['hour_diff'] = np.sign(df[['hour']].diff().fillna(0))
@@ -459,6 +458,7 @@ gc.collect()
 
 end_time = time.time()
 print("生成特征耗时：", end_time - start_time)
+
 
 def load_data():
     return train, test, no_features, features

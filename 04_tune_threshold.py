@@ -23,7 +23,7 @@ if __name__ == '__main__':
     lgb_prob = pd.read_csv('result/lgb_prob.csv')
     # xgb_prob = pd.read_csv('result/xgb_prob.csv')
     # xgb_prob = lgb_prob
-    entity = pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
+    # entity = pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
 
     # xgb_prob['target'] = lgb_prob['target'] * 0.7 + xgb_prob['target'] * 0.3
     # xgb_prob['target'] = lgb_prob['target'] * 0.4 + entity['target'] * 0.3 + xgb_prob['target'] * 0.3

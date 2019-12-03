@@ -6,3 +6,7 @@ tmp/
 .ipynb_checkpoints/
 features/*.csv
 analysis/
+features/test.pickle
+features/train.pickle
+features/app.pickle
+features/user.pickle
