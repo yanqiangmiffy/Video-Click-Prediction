@@ -79,8 +79,10 @@ def preprocess_ts(df):
     :param df:
     :return:
     """
-    df["hour"] = df["ts"].dt.hour
     df["day"] = df["ts"].dt.day
+    df["hour"] = df["ts"].dt.hour
+    df["minute"] = df["ts"].dt.minute
+
     # df["weekend"] = df["ts"].dt.weekday
     # df["month"] = df["ts"].dt.month
     df["dayofweek"] = df["ts"].dt.dayofweek
@@ -431,6 +433,10 @@ df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 
 del user
 
 df = get_cvr_fea(df, cate_cols+['deviceid','level', 'personidentification', 'followscore', 'personalscore', 'gender'])
+
+df['day_diff'] = np.sign(df[['day']].diff().fillna(0))
+df['hour_diff'] = np.sign(df[['hour']].diff().fillna(0))
+df['minute_diff'] = np.sign(df[['minute']].diff().fillna(0))
 
 df = reduce_mem_usage(df)
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']

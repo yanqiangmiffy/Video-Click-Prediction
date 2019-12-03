@@ -5,3 +5,4 @@ result
 tmp/
 .ipynb_checkpoints/
 features/*.csv
+analysis/
