@@ -6,15 +6,16 @@ from sklearn.metrics import *
 import numpy as np
 import lightgbm as lgb
 from sklearn.model_selection import StratifiedKFold, KFold
-from gen_feas import load_data
+# from gen_feas import load_data
 import matplotlib.pyplot as plt
 import seaborn as sns
 import gc
 from utils import *
 from tqdm import tqdm
 import types
+from get_feas_lpf_4 import load_data
 
-train, test, no_featuress, features = load_data()
+train, test, no_features, features = load_data()
 sample_submission = pd.read_feather('data/sample_submission.feather')
 
 n_fold = 5
@@ -40,21 +41,27 @@ def pred(X_test, model, batch_size=10000):
         y_test_pred_total[k * batch_size:(k + 1) * batch_size] += y_pred_test
     return y_test_pred_total
 
+
 def rae(y_true, y_pred):
     return 'RAE', np.sum(np.abs(y_pred - y_true)) / np.sum(np.abs(np.mean(y_true) - y_true)), False
+
 
 def rmsle(y_true, y_pred):
     return 'RMSLE', np.sqrt(np.mean(np.power(np.log1p(y_pred) - np.log1p(y_true), 2))), False
 
+
 def lgb_f1_score(y_hat, data):
     y_true = data.get_label()
-    y_hat = np.round(y_hat) # scikits f1 doesn't like probabilities
+    y_hat = np.round(y_hat)  # scikits f1 doesn't like probabilities
     return 'f1', f1_score(y_true, y_hat), True
+
 
 def eval_func(y_pred, train_data):
     y_true = train_data.get_label()
     score = f1_score(y_true, np.round(y_pred))
     return 'f1', score, True
+
+
 # clf.fit(X, y, eval_set=[(X, y)], eval_metric=lambda y_true, y_pred: [rmsle(y_true, y_pred), rae(y_true, y_pred)]
 
 # [1314, 4590]
@@ -95,7 +102,7 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
 
 fea_importance_df = pd.DataFrame({
     'features': features,
-    'importance': fea_importances/kfold.n_splits
+    'importance': fea_importances / kfold.n_splits
 })
 fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/lgb_fea_importance.csv', index=None)
 
@@ -106,8 +113,6 @@ sample_submission.to_csv('result/lgb_prob.csv', index=False, sep=",")
 sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
 print(sample_submission['target'].value_counts())
 sample_submission.to_csv('result/lgb_result.csv', index=False)
-
-
 
 # plt.figure(figsize=(14, 30))
 # sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))
