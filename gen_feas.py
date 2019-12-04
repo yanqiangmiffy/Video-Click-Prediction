@@ -65,8 +65,8 @@ too_many = ['5b02f07eafae65fdbf9760867bcd8856',
 train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
-train_df['raw_ts']=train_df['ts']
-test_df['raw_ts']=test_df['ts']
+train_df['raw_ts'] = train_df['ts']
+test_df['raw_ts'] = test_df['ts']
 
 # 将时间戳转为datetime
 train_df['ts'] = train_df['ts'].apply(lambda x: get_time_str(x / 1000))
@@ -92,7 +92,13 @@ def preprocess_ts(df):
 
 df = pd.concat([train_df, test_df], sort=False, axis=0)
 preprocess_ts(df)
-
+# 排序 相减
+df = df.sort_values(by=['guid', 'raw_ts'], ascending=False)
+df['ts_1'] = df['raw_ts'].shift(1)
+df['ts_1'].fillna(1573142399626, inplace=True)
+df['ts_diff'] = df['raw_ts'] - df['ts_1']
+df['ts_diff'] = df['ts_diff'] / 10000
+print(df[['raw_ts', 'ts_1', 'ts_diff']])
 # statics()
 app_df = pd.read_csv(root / 'app.csv')
 user_df = pd.read_csv(root / 'user.csv')
@@ -438,116 +444,116 @@ df = get_cvr_fea(df,
 def get_deepfm(data):
     # 把相隔广告曝光相隔时间较短的数据视为同一个事件，这里暂取间隔为3min
     # rank按时间排序同一个事件中每条数据发生的前后关系
-    group = data.groupby('deviceid')
-    data['gap_before'] = group['raw_ts'].shift(0) - group['raw_ts'].shift(1)
-    data['gap_before'] = data['gap_before'].fillna(3 * 60 * 1000)
-    INDEX = data[data['gap_before'] > (3 * 60 * 1000 - 1)].index
-    data['gap_before'] = np.log(data['gap_before'] // 1000 + 1)
-    data['gap_before_int'] = np.rint(data['gap_before'])
-    LENGTH = len(INDEX)
-    ts_group = []
-    ts_len = []
-    for i in tqdm(range(1, LENGTH)):
-        ts_group += [i - 1] * (INDEX[i] - INDEX[i - 1])
-        ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
-    ts_group += [LENGTH - 1] * (len(data) - INDEX[LENGTH - 1])
-    ts_len += [(len(data) - INDEX[LENGTH - 1])] * (len(data) - INDEX[LENGTH - 1])
-    data['ts_before_group'] = ts_group
-    data['ts_before_len'] = ts_len
-    data['ts_before_rank'] = group['raw_ts'].apply(lambda x: (x).rank())
-    data['ts_before_rank'] = (data['ts_before_rank'] - 1) / \
-                             (data['ts_before_len'] - 1)
-    del ts_group
-    group = data.groupby('deviceid')
-    data['gap_after'] = group['raw_ts'].shift(-1) - group['raw_ts'].shift(0)
-    data['gap_after'] = data['gap_after'].fillna(3 * 60 * 1000)
-    INDEX = data[data['gap_after'] > (3 * 60 * 1000 - 1)].index
-    data['gap_after'] = np.log(data['gap_after'] // 1000 + 1)
-    data['gap_after_int'] = np.rint(data['gap_after'])
-    LENGTH = len(INDEX)
-    ts_group = [0] * (INDEX[0] + 1)
-    ts_len = [INDEX[0]] * (INDEX[0] + 1)
-    for i in tqdm(range(1, LENGTH)):
-        ts_group += [i] * (INDEX[i] - INDEX[i - 1])
-        ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
-    data['ts_after_group'] = ts_group
-    data['ts_after_len'] = ts_len
-    data['ts_after_rank'] = group['raw_ts'].apply(lambda x: (-x).rank())
-    data['ts_after_rank'] = (data['ts_after_rank'] - 1) / (data['ts_after_len'] - 1)
-    del group, ts_group
-
-    data.loc[data['ts_before_rank'] == np.inf, 'ts_before_rank'] = 0
-    data.loc[data['ts_after_rank'] == np.inf, 'ts_after_rank'] = 0
-    data['ts_before_len'] = np.log(data['ts_before_len'] + 1)
-    data['ts_after_len'] = np.log(data['ts_after_len'] + 1)
-
-    def split(key_ans):
-        for key in key_ans:
-            if key not in key2index:
-                # Notice : input value 0 is a special "padding",so we do not use 0 to encode valid feature for sequence input
-                key2index[key] = len(key2index) + 1
-        return list(map(lambda x: key2index[x], key_ans))
-
-    # 'deviceid'不唯一
-    app = app_df
-    app['applist'] = app['applist'].apply(lambda x: x[1:-2])
-    group = app.groupby('deviceid')
-    del app
-
-    gps = group['applist'].apply(lambda x: list(set(' '.join(x).split(' '))))
-    del group
-    gps = pd.DataFrame(gps)
-    key2index = {}
-    gps['applist_key'] = list(map(split, gps['applist']))
-    gps['applist_len'] = gps['applist'].apply(lambda x: len(x))
-    gps['applist_weight'] = gps['applist_len'].apply(lambda x: x * [1])
-    gps.drop('applist', axis=1, inplace=True)
-    print(len(key2index))
-    data = pd.merge(data, gps, on=['deviceid'], how='left')
-    del key2index, gps
-
-    #  ['deviceid', 'guid']唯一， 'deviceid'不唯一
-    user = user_df
-    for i in ['tag', 'outertag']:
-        user.loc[user['%s' % i].isna() == False, '%s_weight' % i] = user.loc[user['%s' % i].isna() == False, '%s' %
-                                                                             i].apply(
-            lambda x: [np.float16(i.split(':')[1]) if len(i.split(':')) == 2 else 0 for i in x.split('|')])
-        user.loc[user['%s' % i].isna() == False, '%s_key' % i] = user.loc[user['%s' % i].isna(
-        ) == False, '%s' % i].apply(lambda x: [i.split(':')[0] for i in x.split('|')])
-        user.loc[user['%s_weight' % i].isna() == False, '%s_len' % i] = user.loc[user['%s_weight' %
-                                                                                      i].isna() == False, '%s_weight' % i].apply(
-            lambda x: len(x))
-        key2index = {}
-        user.loc[user['%s_key' % i].isna() == False, '%s_key' % i] = list(
-            map(split, user.loc[user['%s_key' % i].isna() == False, '%s_key' % i]))
-        user.drop(i, axis=1, inplace=True)
-        print(len(key2index))
-    user['guid'].fillna('', inplace=True)
-    data['guid'].fillna('', inplace=True)
-    print(user.columns)
-    print(data.columns)
-    data = pd.merge(data, user, on=['deviceid', 'guid'], how='left')
-    del user
-    from scipy import stats
-    min_time = data['raw_ts'].min()
-    data['timestamp'] -= min_time
-    data['raw_ts'] -= min_time
-    data['lat_int'] = np.int64(np.rint(data['lat'] * 100))
-    data['lng_int'] = np.int64(np.rint(data['lng'] * 100))
-    # data.loc[data['level'].isna() == False, 'level_int'] = np.int64(
-    #     data.loc[data['level'].isna() == False, 'level'])
-    group = data[['deviceid', 'lat', 'lng']].groupby('deviceid')
-    gp = group[['lat', 'lng']].agg(lambda x: stats.mode(x)[0][0]).reset_index()
-    gp.columns = ['deviceid', 'lat_mode', 'lng_mode']
-    data = pd.merge(data, gp, on='deviceid', how='left')
-    del group, gp
-    data['dist'] = np.log((data['lat'] - data['lat_mode']) **
-                          2 + (data['lng'] - data['lng_mode']) ** 2 + 1)
-    data['dist_int'] = np.rint(data['dist'])
-    data.loc[data['lat'] != data['lat_mode'], 'isLatSame'] = 0
-    data.loc[data['lat'] == data['lat_mode'], 'isLatSame'] = 1
-    data.loc[data['lng'] != data['lng_mode'], 'isLngSame'] = 0
-    data.loc[data['lng'] == data['lng_mode'], 'isLngSame'] = 1
+    # group = data.groupby('deviceid')
+    # data['gap_before'] = group['raw_ts'].shift(0) - group['raw_ts'].shift(1)
+    # data['gap_before'] = data['gap_before'].fillna(3 * 60 * 1000)
+    # INDEX = data[data['gap_before'] > (3 * 60 * 1000 - 1)].index
+    # data['gap_before'] = np.log(data['gap_before'] // 1000 + 1)
+    # data['gap_before_int'] = np.rint(data['gap_before'])
+    # LENGTH = len(INDEX)
+    # ts_group = []
+    # ts_len = []
+    # for i in tqdm(range(1, LENGTH)):
+    #     ts_group += [i - 1] * (INDEX[i] - INDEX[i - 1])
+    #     ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
+    # ts_group += [LENGTH - 1] * (len(data) - INDEX[LENGTH - 1])
+    # ts_len += [(len(data) - INDEX[LENGTH - 1])] * (len(data) - INDEX[LENGTH - 1])
+    # data['ts_before_group'] = ts_group
+    # data['ts_before_len'] = ts_len
+    # data['ts_before_rank'] = group['raw_ts'].apply(lambda x: (x).rank())
+    # data['ts_before_rank'] = (data['ts_before_rank'] - 1) / \
+    #                          (data['ts_before_len'] - 1)
+    # del ts_group
+    # group = data.groupby('deviceid')
+    # data['gap_after'] = group['raw_ts'].shift(-1) - group['raw_ts'].shift(0)
+    # data['gap_after'] = data['gap_after'].fillna(3 * 60 * 1000)
+    # INDEX = data[data['gap_after'] > (3 * 60 * 1000 - 1)].index
+    # data['gap_after'] = np.log(data['gap_after'] // 1000 + 1)
+    # data['gap_after_int'] = np.rint(data['gap_after'])
+    # LENGTH = len(INDEX)
+    # ts_group = [0] * (INDEX[0] + 1)
+    # ts_len = [INDEX[0]] * (INDEX[0] + 1)
+    # for i in tqdm(range(1, LENGTH)):
+    #     ts_group += [i] * (INDEX[i] - INDEX[i - 1])
+    #     ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
+    # data['ts_after_group'] = ts_group
+    # data['ts_after_len'] = ts_len
+    # data['ts_after_rank'] = group['raw_ts'].apply(lambda x: (-x).rank())
+    # data['ts_after_rank'] = (data['ts_after_rank'] - 1) / (data['ts_after_len'] - 1)
+    # del group, ts_group
+    #
+    # data.loc[data['ts_before_rank'] == np.inf, 'ts_before_rank'] = 0
+    # data.loc[data['ts_after_rank'] == np.inf, 'ts_after_rank'] = 0
+    # data['ts_before_len'] = np.log(data['ts_before_len'] + 1)
+    # data['ts_after_len'] = np.log(data['ts_after_len'] + 1)
+    #
+    # def split(key_ans):
+    #     for key in key_ans:
+    #         if key not in key2index:
+    #             # Notice : input value 0 is a special "padding",so we do not use 0 to encode valid feature for sequence input
+    #             key2index[key] = len(key2index) + 1
+    #     return list(map(lambda x: key2index[x], key_ans))
+    #
+    # # 'deviceid'不唯一
+    # app = app_df
+    # app['applist'] = app['applist'].apply(lambda x: x[1:-2])
+    # group = app.groupby('deviceid')
+    # del app
+    #
+    # gps = group['applist'].apply(lambda x: list(set(' '.join(x).split(' '))))
+    # del group
+    # gps = pd.DataFrame(gps)
+    # key2index = {}
+    # gps['applist_key'] = list(map(split, gps['applist']))
+    # gps['applist_len'] = gps['applist'].apply(lambda x: len(x))
+    # gps['applist_weight'] = gps['applist_len'].apply(lambda x: x * [1])
+    # gps.drop('applist', axis=1, inplace=True)
+    # print(len(key2index))
+    # data = pd.merge(data, gps, on=['deviceid'], how='left')
+    # del key2index, gps
+    #
+    # #  ['deviceid', 'guid']唯一， 'deviceid'不唯一
+    # user = user_df
+    # for i in ['tag', 'outertag']:
+    #     user.loc[user['%s' % i].isna() == False, '%s_weight' % i] = user.loc[user['%s' % i].isna() == False, '%s' %
+    #                                                                          i].apply(
+    #         lambda x: [np.float16(i.split(':')[1]) if len(i.split(':')) == 2 else 0 for i in x.split('|')])
+    #     user.loc[user['%s' % i].isna() == False, '%s_key' % i] = user.loc[user['%s' % i].isna(
+    #     ) == False, '%s' % i].apply(lambda x: [i.split(':')[0] for i in x.split('|')])
+    #     user.loc[user['%s_weight' % i].isna() == False, '%s_len' % i] = user.loc[user['%s_weight' %
+    #                                                                                   i].isna() == False, '%s_weight' % i].apply(
+    #         lambda x: len(x))
+    #     key2index = {}
+    #     user.loc[user['%s_key' % i].isna() == False, '%s_key' % i] = list(
+    #         map(split, user.loc[user['%s_key' % i].isna() == False, '%s_key' % i]))
+    #     user.drop(i, axis=1, inplace=True)
+    #     print(len(key2index))
+    # user['guid'].fillna('', inplace=True)
+    # data['guid'].fillna('', inplace=True)
+    # print(user.columns)
+    # print(data.columns)
+    # data = pd.merge(data, user, on=['deviceid', 'guid'], how='left')
+    # del user
+    # from scipy import stats
+    # min_time = data['raw_ts'].min()
+    # data['timestamp'] -= min_time
+    # data['raw_ts'] -= min_time
+    # data['lat_int'] = np.int64(np.rint(data['lat'] * 100))
+    # data['lng_int'] = np.int64(np.rint(data['lng'] * 100))
+    # # data.loc[data['level'].isna() == False, 'level_int'] = np.int64(
+    # #     data.loc[data['level'].isna() == False, 'level'])
+    # group = data[['deviceid', 'lat', 'lng']].groupby('deviceid')
+    # gp = group[['lat', 'lng']].agg(lambda x: stats.mode(x)[0][0]).reset_index()
+    # gp.columns = ['deviceid', 'lat_mode', 'lng_mode']
+    # data = pd.merge(data, gp, on='deviceid', how='left')
+    # del group, gp
+    # data['dist'] = np.log((data['lat'] - data['lat_mode']) **
+    #                       2 + (data['lng'] - data['lng_mode']) ** 2 + 1)
+    # data['dist_int'] = np.rint(data['dist'])
+    # data.loc[data['lat'] != data['lat_mode'], 'isLatSame'] = 0
+    # data.loc[data['lat'] == data['lat_mode'], 'isLatSame'] = 1
+    # data.loc[data['lng'] != data['lng_mode'], 'isLngSame'] = 0
+    # data.loc[data['lng'] == data['lng_mode'], 'isLngSame'] = 1
 
     # data.loc[data['personalscore'].isna(), 'personalscore'] = data['personalscore'].mode()
     return data
@@ -558,6 +564,7 @@ df = get_deepfm(df)
 df['day_diff'] = np.sign(df[['day']].diff().fillna(0))
 df['hour_diff'] = np.sign(df[['hour']].diff().fillna(0))
 df['minute_diff'] = np.sign(df[['minute']].diff().fillna(0))
+
 
 def reduce_mem_usage(df, verbose=True):
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
@@ -588,6 +595,8 @@ def reduce_mem_usage(df, verbose=True):
         print('Mem. usage decreased to {:5.2f} Mb ({:.1f}% reduction)'.format(
             end_mem, 100 * (start_mem - end_mem) / start_mem))
     return df
+
+
 df = reduce_mem_usage(df)
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
 features = [fea for fea in df.columns if fea not in no_features]
