@@ -114,9 +114,10 @@ print(train_df.head())
 r = get_result(train_df, test_df, label, lgb_para_binary_model, splits_nums=5)
 sub['target'] = r
 
+sub[['id', 'target']].to_csv('submission_lgb_float.csv', index=None)
+
 r_c = sorted(r, reverse=True)
 cut = r_c[400000]
-
 sub['target'] = sub['target'].apply(lambda x: 0 if x <= cut else 1)
 sub[['id', 'target']].to_csv('submission_lgb.csv', index=None)
 print(sub['target'].value_counts())
