@@ -50,7 +50,7 @@ def get_result(train, test, label, my_model, splits_nums=10):
 
         # 训练完成 发送邮件
         try:
-            mail_all(str(index) + "lgb cpu 训练完成，cv AUC:{}".format(score), '17853530715@163.com')
+            mail_all(str(index) + "lgb cpu 训练完成，cv AUC:{}".format(score), '15858186425@163.com')
         except:
             print('邮件发送失败')
 
