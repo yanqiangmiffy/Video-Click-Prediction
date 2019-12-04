@@ -101,8 +101,7 @@ user_df = pd.read_csv(root / 'user.csv')
 # print(df.info())
 
 cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
-            ['pos', 'osversion'] + \
-            ['guid', 'newsid']
+            ['pos', 'osversion']
 
 # df=pd.get_dummies(df,columns=cate_cols)
 for col in cate_cols:
@@ -460,7 +459,7 @@ def get_deepfm(data):
                              (data['ts_before_len'] - 1)
     del ts_group
     group = data.groupby('deviceid')
-    data['gap_after'] = group['raw_ts'].shift(-1) - group['ts'].shift(0)
+    data['gap_after'] = group['raw_ts'].shift(-1) - group['raw_ts'].shift(0)
     data['gap_after'] = data['gap_after'].fillna(3 * 60 * 1000)
     INDEX = data[data['gap_after'] > (3 * 60 * 1000 - 1)].index
     data['gap_after'] = np.log(data['gap_after'] // 1000 + 1)
@@ -528,9 +527,9 @@ def get_deepfm(data):
     data = pd.merge(data, user, on=['deviceid', 'guid'], how='left')
     del user
     from scipy import stats
-    min_time = data['ts'].min()
+    min_time = data['raw_ts'].min()
     data['timestamp'] -= min_time
-    data['ts'] -= min_time
+    data['raw_ts'] -= min_time
     data['lat_int'] = np.int64(np.rint(data['lat'] * 100))
     data['lng_int'] = np.int64(np.rint(data['lng'] * 100))
     data.loc[data['level'].isna() == False, 'level_int'] = np.int64(
