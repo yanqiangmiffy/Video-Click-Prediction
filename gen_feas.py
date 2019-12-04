@@ -89,6 +89,7 @@ def preprocess_ts(df):
 
 
 df = pd.concat([train_df, test_df], sort=False, axis=0)
+df['raw_ts']=df['ts']
 preprocess_ts(df)
 
 # statics()
@@ -438,7 +439,7 @@ def get_deepfm(data):
     # 把相隔广告曝光相隔时间较短的数据视为同一个事件，这里暂取间隔为3min
     # rank按时间排序同一个事件中每条数据发生的前后关系
     group = data.groupby('deviceid')
-    data['gap_before'] = group['ts'].shift(0) - group['ts'].shift(1)
+    data['gap_before'] = group['raw_ts'].shift(0) - group['raw_ts'].shift(1)
     data['gap_before'] = data['gap_before'].fillna(3 * 60 * 1000)
     INDEX = data[data['gap_before'] > (3 * 60 * 1000 - 1)].index
     data['gap_before'] = np.log(data['gap_before'] // 1000 + 1)
@@ -453,12 +454,12 @@ def get_deepfm(data):
     ts_len += [(len(data) - INDEX[LENGTH - 1])] * (len(data) - INDEX[LENGTH - 1])
     data['ts_before_group'] = ts_group
     data['ts_before_len'] = ts_len
-    data['ts_before_rank'] = group['ts'].apply(lambda x: (x).rank())
+    data['ts_before_rank'] = group['raw_ts'].apply(lambda x: (x).rank())
     data['ts_before_rank'] = (data['ts_before_rank'] - 1) / \
                              (data['ts_before_len'] - 1)
     del ts_group
     group = data.groupby('deviceid')
-    data['gap_after'] = group['ts'].shift(-1) - group['ts'].shift(0)
+    data['gap_after'] = group['raw_ts'].shift(-1) - group['ts'].shift(0)
     data['gap_after'] = data['gap_after'].fillna(3 * 60 * 1000)
     INDEX = data[data['gap_after'] > (3 * 60 * 1000 - 1)].index
     data['gap_after'] = np.log(data['gap_after'] // 1000 + 1)
@@ -471,7 +472,7 @@ def get_deepfm(data):
         ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
     data['ts_after_group'] = ts_group
     data['ts_after_len'] = ts_len
-    data['ts_after_rank'] = group['ts'].apply(lambda x: (-x).rank())
+    data['ts_after_rank'] = group['raw_ts'].apply(lambda x: (-x).rank())
     data['ts_after_rank'] = (data['ts_after_rank'] - 1) / (data['ts_after_len'] - 1)
     del group, ts_group
 
