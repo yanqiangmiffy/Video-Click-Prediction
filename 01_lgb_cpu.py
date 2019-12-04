@@ -6,14 +6,14 @@ from sklearn.metrics import *
 import numpy as np
 import lightgbm as lgb
 from sklearn.model_selection import StratifiedKFold, KFold
-# from gen_feas import load_data
+from gen_feas import load_data
 import matplotlib.pyplot as plt
 import seaborn as sns
 import gc
 from utils import *
 from tqdm import tqdm
 import types
-from get_feas_lpf_4 import load_data
+# from get_feas_lpf_4 import load_data
 
 train, test, no_features, features = load_data()
 sample_submission = pd.read_feather('data/sample_submission.feather')
