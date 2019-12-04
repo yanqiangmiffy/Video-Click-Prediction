@@ -65,6 +65,8 @@ too_many = ['5b02f07eafae65fdbf9760867bcd8856',
 train_df['target'] = train_df['target'].astype(int)
 test_df = pd.read_csv(root / 'test.csv')
 test_df['target'] = 0
+train_df['raw_ts']=train_df['ts']
+test_df['raw_ts']=test_df['ts']
 
 # 将时间戳转为datetime
 train_df['ts'] = train_df['ts'].apply(lambda x: get_time_str(x / 1000))
@@ -89,7 +91,6 @@ def preprocess_ts(df):
 
 
 df = pd.concat([train_df, test_df], sort=False, axis=0)
-df['raw_ts']=df['ts']
 preprocess_ts(df)
 
 # statics()
