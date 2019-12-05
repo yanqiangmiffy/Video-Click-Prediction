@@ -1,6 +1,7 @@
 import pandas as pd
 
-xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id','target']]
+# xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id','target']]
+xgb_prob = pd.read_csv('result/submission_lgb_float.csv')[['id','target']]
 # xgb_prob = pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')[['id','target']]
 # print(xgb_prob)
 
@@ -11,7 +12,7 @@ targets = []
 for i in range(len(xgb_prob)):
     # if i <= 292287:
     # if i <= 283651:
-    if i <= 404392.8:
+    if i <= 454392.8:
         targets.append(1)
     else:
         targets.append(0)
@@ -29,5 +30,5 @@ submit = xgb_prob[['id']]
 submit['target'] = xgb_prob['target']
 
 submit['target'] = submit['target'].rank()
-submit['target'] = (submit['target'] >= submit.shape[0] * 0.8934642948637943).astype(int)
+submit['target'] = (submit['target'] >= submit.shape[0] * 0.87).astype(int)
 submit.to_csv("result/submit.csv", index=False)

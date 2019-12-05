@@ -20,7 +20,8 @@ if __name__ == '__main__':
     # xgb_prob=pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
     xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id', 'target']]
 
-    lgb_prob = pd.read_csv('result/lgb_prob.csv')
+    # lgb_prob = pd.read_csv('result/lgb_prob.csv')
+    lgb_prob = pd.read_csv('result/submission_lgb_float.csv')
     # xgb_prob = pd.read_csv('result/xgb_prob.csv')
     # xgb_prob = lgb_prob
     # entity = pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
