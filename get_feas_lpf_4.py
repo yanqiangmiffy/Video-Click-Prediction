@@ -135,7 +135,7 @@ def get_fea(train, test, user, app):
     print(df[cat_list])
     for i in tqdm(cat_list):
         df['{}_count'.format(i)] = df.groupby(['{}'.format(i)])['id'].transform('count')
-        df['{}_ts_day_count'.format(i)] = df.groupby(['{}'.format(i), 'ts_day'])['id'].transform('count')
+        df['{}_ts_day_hour_count'.format(i)] = df.groupby(['{}'.format(i), 'ts_day', 'ts_hour'])['id'].transform('count')
 
     # 类别特征五折转化率特征
     df['ID'] = df.index
