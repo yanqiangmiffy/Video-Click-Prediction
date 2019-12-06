@@ -44,6 +44,8 @@ fe2745f02d1f287eacb965d218a3e653     21927
 5ea2d95b5a2d46a23cb5dacd0271dff7     20360
 
 ```
+## 开源方案
+- https://github.com/ZS167275/Eternity-in-an-hour/blob/master/baseline
 
 ## 参考资料
 - [基于特征工程的视频点击率预测算法](http://xblk.ecnu.edu.cn/CN/html/20180309.htm)
