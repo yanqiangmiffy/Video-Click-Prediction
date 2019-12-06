@@ -16,7 +16,8 @@ import gc
 # from get_feas_lpf import load_data
 # from get_feas_lpf_2 import load_data
 # from get_feas_lpf_3 import load_data
-from get_feas_lpf_4 import load_data
+# from get_feas_lpf_4 import load_data
+from get_feas_lpf_6 import load_data
 from utils import *
 
 
