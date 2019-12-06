@@ -17,10 +17,11 @@ from sklearn.feature_selection import chi2, SelectPercentile
 from matplotlib import pyplot as plt
 import time
 import gc
+
 pd.set_option('display.max_columns', None)
 
-
 scaler = StandardScaler()
+
 
 def get_fea(train, test, user, app):
     test['target'] = 'test'
@@ -97,7 +98,6 @@ def get_fea(train, test, user, app):
     train = df[df['target'] != 'test']
     test = df[df['target'] == 'test']
 
-
     train = train[train['target'].notnull()].reset_index(drop=True)
     print(train.shape)
     return train, test, no_features
@@ -116,7 +116,6 @@ def get_result(train, test, label, my_model, splits_nums=10):
 
     k_fold = StratifiedKFold(n_splits=splits_nums, shuffle=True, random_state=1314)
     for index, (train_index, test_index) in enumerate(k_fold.split(train, label)):
-
         X_train, X_test = train[train_index], train[test_index]
         y_train, y_test = label[train_index], label[test_index]
         model = my_model(X_train, y_train, X_test, y_test)
@@ -163,6 +162,7 @@ def get_result(train, test, label, my_model, splits_nums=10):
 
     return r
 
+
 def lgb_para_binary_model(X_train, y_train, X_test, y_test):
     params = {
         'task': 'train',
@@ -189,6 +189,7 @@ def lgb_para_binary_model(X_train, y_train, X_test, y_test):
                       early_stopping_rounds=100)
     return model
 
+
 train = pd.read_csv('../data/train.csv')
 test = pd.read_csv('../data/test.csv')
 user = pd.read_csv('../data/user.csv')
@@ -213,7 +214,6 @@ del train
 del test
 gc.collect()
 
-
 print(train_df.head())
 
 r = get_result(train_df, test_df, label, lgb_para_binary_model, splits_nums=5)
@@ -225,6 +225,5 @@ cut = r_c[400000]
 sub['target'] = sub['target'].apply(lambda x: 0 if x <= cut else 1)
 sub[['id', 'target']].to_csv('../result/submission_lgb.csv', index=None)
 print(sub['target'].value_counts())
-
 
 

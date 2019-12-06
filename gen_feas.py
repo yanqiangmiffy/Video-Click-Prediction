@@ -31,11 +31,11 @@ def get_time_str(x):
 
 
 # 辅助函数
-def statics():
+def statics(data):
     stats = []
-    for col in train_df.columns:
-        stats.append((col, train_df[col].nunique(), train_df[col].isnull().sum() * 100 / train_df.shape[0],
-                      train_df[col].value_counts(normalize=True, dropna=False).values[0] * 100, train_df[col].dtype))
+    for col in data.columns:
+        stats.append((col, data[col].nunique(), data[col].isnull().sum() * 100 / data.shape[0],
+                      data[col].value_counts(normalize=True, dropna=False).values[0] * 100, data[col].dtype))
 
     stats_df = pd.DataFrame(stats, columns=['Feature', 'Unique_values', 'Percentage of missing values',
                                             'Percentage of values in the biggest category', 'type'])
@@ -426,10 +426,10 @@ def get_cvr_fea(data, cat_list=None):
 # del tag_fea
 # gc.collect()
 #
-cluster_fea = pd.read_csv('features/01_user_cluster.csv')
-df = pd.merge(df, cluster_fea, on='deviceid', how='left')
-del cluster_fea
-gc.collect()
+# cluster_fea = pd.read_csv('features/01_user_cluster.csv')
+# df = pd.merge(df, cluster_fea, on='deviceid', how='left')
+# del cluster_fea
+# gc.collect()
 
 user = user_df.drop_duplicates('deviceid')
 df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
@@ -565,11 +565,16 @@ df['hour_diff'] = np.sign(df[['hour']].diff().fillna(0))
 df['minute_diff'] = np.sign(df[['minute']].diff().fillna(0))
 
 df = reduce_mem_usage(df)
-no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold']
+no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold'] + \
+              ['id', 'target', 'timestamp', 'ts', 'isTest', 'day',
+               'lat_mode', 'lng_mode', 'abtarget', 'applist_key',
+               'applist_weight', 'tag_key', 'tag_weight', 'outertag_key',
+               'outertag_weight', 'newsid']
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(200).to_csv('tmp/df.csv', index=None)
 df.to_pickle('tmp/data.pickle')
+statics(df[features])
 print("df shape", df.shape)
 print("len(features),features", len(features), features)
 print(train['target'].value_counts())
