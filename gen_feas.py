@@ -569,7 +569,7 @@ no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 
 features = [fea for fea in df.columns if fea not in no_features]
 train, test = df[:len(train_df)], df[len(train_df):]
 df.head(200).to_csv('tmp/df.csv', index=None)
-
+df.to_pickle('tmp/data.pickle')
 print("df shape", df.shape)
 print("len(features),features", len(features), features)
 print(train['target'].value_counts())
