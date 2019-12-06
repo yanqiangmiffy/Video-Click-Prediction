@@ -62,11 +62,13 @@ def get_fea(train, test, user, app):
 
 
     # 排序 相减
-    df = df.sort_values(by=['guid', 'ts'], ascending=False)
+    df = df.sort_values(by=['guid', 'ts'], ascending=[True, True])
     df['ts_1'] = df['ts'].shift(1)
     df['ts_1'].fillna(1573142399626, inplace=True)
     df['ts_diff'] = df['ts'] - df['ts_1']
     df['ts_diff'] = df['ts_diff']/10000
+    df['ts_diff'] = df['ts_diff'].apply(lambda x: np.nan if x <=0 else x)
+    df['ts_diff'] = df['ts_diff'].apply(lambda x: np.nan if x >=2000 else x)
     print(df[['ts', 'ts_1', 'ts_diff']])
 
     # # 把相隔广告曝光相隔时间较短的数据视为同一个事件，这里暂取间隔为3min
@@ -135,7 +137,6 @@ def get_fea(train, test, user, app):
     print(df[cat_list])
     for i in tqdm(cat_list):
         df['{}_count'.format(i)] = df.groupby(['{}'.format(i)])['id'].transform('count')
-        df['{}_ts_day_hour_count'.format(i)] = df.groupby(['{}'.format(i), 'ts_day', 'ts_hour'])['id'].transform('count')
 
     # 类别特征五折转化率特征
     df['ID'] = df.index
@@ -210,3 +211,4 @@ features = [fea for fea in train.columns if fea not in no_features]
 # print(train)
 def load_data():
     return train, test, no_features, features
+
