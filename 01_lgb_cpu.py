@@ -16,7 +16,8 @@ import types
 # from get_feas_lpf_4 import load_data
 
 train, test, no_features, features = load_data()
-sample_submission = pd.read_feather('data/sample_submission.feather')
+sample_submission = pd.read_csv('data/sample.csv')
+print(features)
 
 n_fold = 5
 y_scores = 0
@@ -24,10 +25,8 @@ test_size = test.shape[0]
 y_pred_all_l1 = np.zeros(test_size)
 
 fea_importances = np.zeros(len(features))
-
 label = ['target']
 train[label] = train[label].astype(int)
-print(train[label])
 
 
 def pred(X_test, model, batch_size=10000):
