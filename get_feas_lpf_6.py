@@ -207,7 +207,7 @@ def get_fea(train, test, user, app):
     # 当前一天内的特征 leak
     for col in [['deviceid'], ['guid'], ['newsid']]:
         print(col)
-        df['{}_days_count'.format('_'.join(col))] = df.groupby(['days'] + col)['id'].transform('count')
+        df['{}_days_count'.format('_'.join(col))] = df.groupby(['ts_day'] + col)['id'].transform('count')
 
 
 
