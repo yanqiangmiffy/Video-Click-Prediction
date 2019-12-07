@@ -1,10 +1,11 @@
 import pandas as pd
 
 # xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id','target']]
-xgb_prob = pd.read_csv('result/submission_lgb_float.csv')[['id','target']]
+# xgb_prob = pd.read_csv('result/submission_lgb_float.csv')[['id','target']]
+xgb_prob = pd.read_csv('result/baseline_prob.csv')[['id','predict']]
 # xgb_prob = pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')[['id','target']]
 # print(xgb_prob)
-
+xgb_prob.columns=['id','target']
 xgb_prob['key']=[i for i in range(len(xgb_prob))]
 xgb_prob.sort_values(by='target', inplace=True,ascending=False)
 
@@ -12,7 +13,7 @@ targets = []
 for i in range(len(xgb_prob)):
     # if i <= 292287:
     # if i <= 283651:
-    if i <= 454392.8:
+    if i <= 40000.8:
         targets.append(1)
     else:
         targets.append(0)
