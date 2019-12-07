@@ -28,8 +28,8 @@ def getlocation(lat, lng):
 
 
 if __name__ == '__main__':
-    train = pd.read_csv('data/train.csv')
-    test = pd.read_csv('data/test.csv')
+    train = pd.read_csv('../data/train.csv')
+    test = pd.read_csv('../data/test.csv')
     df = pd.concat([train, test], sort=False, axis=0)
     df['lat'] = df['lat'].astype(str)
     df['lng'] = df['lng'].astype(str)
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     print(len(set(address)))
     address = list(set(address))
     print(address[:10])
-    with open('tmp/address.csv', 'a', encoding='utf-8') as f:
+    with open('../tmp/address.csv', 'a', encoding='utf-8') as f:
         for i in range(len(address)):
             print(i)
             index = address[i]
