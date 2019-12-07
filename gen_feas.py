@@ -434,6 +434,8 @@ df = get_cvr_fea(df,
                  cate_cols + ['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender'])
 
 gc.collect()
+
+
 def get_deepfm(data):
     # 把相隔广告曝光相隔时间较短的数据视为同一个事件，这里暂取间隔为3min
     # rank按时间排序同一个事件中每条数据发生的前后关系
@@ -558,6 +560,8 @@ df = get_deepfm(df)
 df['day_diff'] = np.sign(df[['day']].diff().fillna(0))
 df['hour_diff'] = np.sign(df[['hour']].diff().fillna(0))
 df['minute_diff'] = np.sign(df[['minute']].diff().fillna(0))
+df.to_pickle('tmp/df.pickle')
+
 # 构造历史特征 分别统计前一天 guid deviceid 的相关信息
 # 8 9 10 11
 history_9 = df[df['day'] == 8]
@@ -644,24 +648,27 @@ for col in [['deviceid'], ['guid'], ['newsid']]:
     print(col)
     data['{}_days_count'.format('_'.join(col))] = data.groupby(['day'] + col)['id'].transform('count')
 
-
-
 print('train and predict')
 X_train = data[data['flag'].isin([9])]
 X_valid = data[data['flag'].isin([10])]
 X_test = data[data['flag'].isin([11])]
-
 X_train_2 = data[data['flag'].isin([9, 10])]
 
 X_train = reduce_mem_usage(X_train)
 X_valid = reduce_mem_usage(X_valid)
 X_test = reduce_mem_usage(X_test)
+X_train_2 = reduce_mem_usage(X_train_2)
+
+X_train.to_pickle('tmp/X_train.pickle')
+X_valid.to_pickle('tmp/X_valid.pickle')
+X_test.to_pickle('tmp/X_test.pickle')
+X_train_2.to_pickle('tmp/X_train_2.pickle')
 
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold'] + \
               ['id', 'target', 'timestamp', 'ts', 'isTest', 'day',
                'lat_mode', 'lng_mode', 'abtarget', 'applist_key',
-               'applist_weight', 'tag_key', 'tag_weight', 'outertag_key',
-               'outertag_weight', 'newsid','datetime']
+               'applist_weight', 'tag_key', 'tag_weight', 'outertag_key', 'tag', 'outertag',
+               'outertag_weight', 'newsid', 'datetime']
 features = [fea for fea in X_train.columns if fea not in no_features]
 
 end_time = time.time()
@@ -669,4 +676,4 @@ print("生成特征耗时：", end_time - start_time)
 
 
 def load_data():
-    return X_train,X_train_2, X_valid, X_test, no_features, features
+    return X_train, X_train_2, X_valid, X_test, no_features, features
