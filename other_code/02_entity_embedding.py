@@ -13,22 +13,18 @@
 import numpy as np
 import pandas as pd
 from keras.callbacks import *
-from keras.layers import *
-from tqdm import tqdm
 import gc
 # random seeds for stochastic parts of neural network
 np.random.seed(10)
 from tensorflow import set_random_seed
 from sklearn.metrics import *
-from sklearn.preprocessing import StandardScaler
 
 set_random_seed(15)
 from keras.models import Model
 from keras.layers import Input, Dense, Concatenate, Reshape, Dropout
 from keras.layers.embeddings import Embedding
 from sklearn.model_selection import StratifiedKFold
-import ipykernel
-from gen_feas_nn import load_data
+from other_code.gen_feas_nn import load_data
 
 
 class roc_auc_callback(Callback):

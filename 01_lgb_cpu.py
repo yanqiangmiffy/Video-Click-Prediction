@@ -13,6 +13,7 @@ import gc
 from utils import *
 from tqdm import tqdm
 import types
+
 # from get_feas_lpf_4 import load_data
 
 train, test, no_features, features = load_data()
@@ -41,29 +42,6 @@ def pred(X_test, model, batch_size=10000):
     return y_test_pred_total
 
 
-def rae(y_true, y_pred):
-    return 'RAE', np.sum(np.abs(y_pred - y_true)) / np.sum(np.abs(np.mean(y_true) - y_true)), False
-
-
-def rmsle(y_true, y_pred):
-    return 'RMSLE', np.sqrt(np.mean(np.power(np.log1p(y_pred) - np.log1p(y_true), 2))), False
-
-
-def lgb_f1_score(y_hat, data):
-    y_true = data.get_label()
-    y_hat = np.round(y_hat)  # scikits f1 doesn't like probabilities
-    return 'f1', f1_score(y_true, y_hat), True
-
-
-def eval_func(y_pred, train_data):
-    y_true = train_data.get_label()
-    score = f1_score(y_true, np.round(y_pred))
-    return 'f1', score, True
-
-
-# clf.fit(X, y, eval_set=[(X, y)], eval_metric=lambda y_true, y_pred: [rmsle(y_true, y_pred), rae(y_true, y_pred)]
-
-# [1314, 4590]
 kfold = StratifiedKFold(n_splits=n_fold, shuffle=False, random_state=1314)
 for i, (train_index, valid_index) in enumerate(kfold.split(train[features], train[label])):
     print("n。{}_th fold".format(i))

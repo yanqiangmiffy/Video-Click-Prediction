@@ -18,14 +18,14 @@ if __name__ == '__main__':
     threshold=float(args.threshold)
     # xgb_prob=pd.read_csv('result/xgb_prob.csv')
     # xgb_prob=pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
-    xgb_prob = pd.read_csv('result/lgb_prob.csv')[['id', 'target']]
+    xgb_prob = pd.read_csv('../result/lgb_prob.csv')[['id', 'target']]
 
     # lgb_prob = pd.read_csv('result/lgb_prob.csv')
-    lgb_prob = pd.read_csv('result/submission_lgb_float.csv')
+    lgb_prob = pd.read_csv('../result/submission_lgb_float.csv')
     # xgb_prob = pd.read_csv('result/xgb_prob.csv')
     # xgb_prob = lgb_prob
     # entity = pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
-    baseline = pd.read_csv('result/baseline_prob.csv')[['id', 'predict']]
+    baseline = pd.read_csv('../result/baseline_prob.csv')[['id', 'predict']]
     baseline.columns = ['id', 'target']
 
     # xgb_prob['target'] = lgb_prob['target'] * 0.7 + xgb_prob['target'] * 0.3

@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     print(args.threshold)
     threshold=float(args.threshold)
-    lgb_prob = pd.read_csv('result/lgb_prob.csv')
+    lgb_prob = pd.read_csv('../result/lgb_prob.csv')
     xgb_prob = pd.read_csv('result/xgb_prob.csv')
     entity=pd.read_csv('result/NN_EntityEmbed_10fold-sub.csv')
 

@@ -53,7 +53,7 @@ pd.set_option('display.max_columns', 50)
 pd.set_option('display.width', 50)
 
 # path = os.getcwd()
-path = '.'
+path = '..'
 path_sub = path + '/result/'
 path_npy = path + '/features/'
 path_model = path + '/tmp/'
@@ -100,19 +100,19 @@ def split(key_ans):
 
 
 with open(path_pickle + 'train.pickle', 'wb') as f:
-    train_df = pd.read_csv('data/train.csv')
+    train_df = pd.read_csv('../data/train.csv')
     pickle.dump(train_df, f)
 
 with open(path_pickle + 'test.pickle', 'wb') as f:
-    test_df = pd.read_csv('data/test.csv')
+    test_df = pd.read_csv('../data/test.csv')
     pickle.dump(test_df, f)
 
 with open(path_pickle + 'app.pickle', 'wb') as f:
-    app_df = pd.read_csv('data/app.csv')
+    app_df = pd.read_csv('../data/app.csv')
     pickle.dump(app_df, f)
 
 with open(path_pickle + 'user.pickle', 'wb') as f:
-    user_df = pd.read_csv('data/user.csv')
+    user_df = pd.read_csv('../data/user.csv')
     pickle.dump(user_df, f)
 
 train = pd.read_pickle(path_pickle + 'train.pickle')

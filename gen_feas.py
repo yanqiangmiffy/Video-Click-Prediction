@@ -25,86 +25,80 @@ start_time = time.time()
 
 
 def get_time_str(x):
-    dateArray = datetime.datetime.utcfromtimestamp(x)
-    otherStyleTime = dateArray.strftime('%Y-%m-%d %H:%M:%S')
-    return otherStyleTime
+    date_utc = datetime.datetime.utcfromtimestamp(x)
+    time_str = date_utc.strftime('%Y-%m-%d %H:%M:%S')
+    return time_str
 
 
-# 辅助函数
-def statics(data):
-    stats = []
-    for col in data.columns:
-        stats.append((col, data[col].nunique(), data[col].isnull().sum() * 100 / data.shape[0],
-                      data[col].value_counts(normalize=True, dropna=False).values[0] * 100, data[col].dtype))
-
-    stats_df = pd.DataFrame(stats, columns=['Feature', 'Unique_values', 'Percentage of missing values',
-                                            'Percentage of values in the biggest category', 'type'])
-    stats_df.sort_values('Unique_values', ascending=False, inplace=True)
-    stats_df.to_excel('tmp/stats_train.xlsx', index=None)
+def preprocess_ts(data):
+    """
+    时间特征,提取天，时，分，周几
+    :param data:DataFrame
+    :return:
+    """
+    data["day"] = data["datetime"].dt.day
+    data["hour"] = data["datetime"].dt.hour
+    data["minute"] = data["datetime"].dt.minute
+    data["dayofweek"] = data["datetime"].dt.dayofweek
+    return data
 
 
 # 加载数据
-root = Path('./data/')
-train_df = pd.read_csv(root / 'train.csv')
-print("train_df.shape", train_df.shape)
-# 删除deviceid出现次数过多的设备
-too_many = ['5b02f07eafae65fdbf9760867bcd8856',
-            '29078bf9ecff29c67c8f52c997445ee4',
-            '3af79e5941776d10da5427bfaa733b15',
-            'f4abf0d603045a3403133d25ab0fc60d',
-            '457d68dc078349635f3360fdc56d5a31',
-            'b89b4b8d9209c77531e7978cad4e088b',
-            '32d5f316d9357a3bfed17c3547e5aceb',
-            'cbc518e46c68e7cda3aaf6c2898d3b24',
-            'fe2745f02d1f287eacb965d218a3e653',
-            '5ea2d95b5a2d46a23cb5dacd0271dff7 ',
-            ]
-# train_df=train_df[~train_df['deviceid'].isin(too_many)]
-# print("train_df.shape",train_df.shape)
+train_df = pd.read_csv('data/train.csv')
+test_df = pd.read_csv('data/test.csv')
+app_df = pd.read_csv('data/app.csv')
+user_df = pd.read_csv('data/user.csv')
 
-train_df['target'] = train_df['target'].astype(int)
-test_df = pd.read_csv(root / 'test.csv')
-test_df['target'] = 0
-train_df['raw_ts'] = train_df['ts']
-test_df['raw_ts'] = test_df['ts']
+# -------------- 数据预处理 -----------------
+# 对数据进行排序
+train_df = train_df.sort_values(['deviceid', 'guid', 'ts'])
+test_df = test_df.sort_values(['deviceid', 'guid', 'ts'])
+
+# 查看数据是否存在交集
+# train deviceid 104736
+# test deviceid 56681
+# train&test deviceid 46833
+# train guid 104333
+# test guid 56861
+# train&test guid 46654
+
+print('train deviceid', len((set(train_df['deviceid']))))
+print('test deviceid', len((set(test_df['deviceid']))))
+print('train&test deviceid', len((set(train_df['deviceid']) & set(test_df['deviceid']))))
+print('train guid', len((set(train_df['guid']))))
+print('test guid', len((set(test_df['guid']))))
+print('train&test guid', len((set(train_df['guid']) & set(test_df['guid']))))
 
 # 将时间戳转为datetime
-train_df['ts'] = train_df['ts'].apply(lambda x: get_time_str(x / 1000))
-test_df['ts'] = test_df['ts'].apply(lambda x: get_time_str(x / 1000))
-train_df['ts'] = pd.to_datetime(train_df['ts'])
-test_df['ts'] = pd.to_datetime(test_df['ts'])
+train_df['datetime'] = train_df['ts'].apply(lambda x: get_time_str(x / 1000))
+test_df['datetime'] = test_df['ts'].apply(lambda x: get_time_str(x / 1000))
+train_df['datetime'] = pd.to_datetime(train_df['datetime'])
+test_df['datetime'] = pd.to_datetime(test_df['datetime'])
 
+# 时间范围
+# 2019-11-07 23:59:59 2019-11-10 23:59:59
+# 2019-11-10 23:59:59 2019-11-11 23:59:59
+print(train_df['datetime'].min(), train_df['datetime'].max())
+print(test_df['datetime'].min(), test_df['datetime'].max())
 
-def preprocess_ts(df):
-    """
-    时间特征
-    :param df:
-    :return:
-    """
-    df["day"] = df["ts"].dt.day
-    df["hour"] = df["ts"].dt.hour
-    df["minute"] = df["ts"].dt.minute
+# 提取相关时间
+train_df = preprocess_ts(train_df)
+test_df = preprocess_ts(test_df)
 
-    # df["weekend"] = df["ts"].dt.weekday
-    # df["month"] = df["ts"].dt.month
-    df["dayofweek"] = df["ts"].dt.dayofweek
-
+# 8 9 10 11
+# 历史3天预测未来1天
+train_df['flag'] = train_df['day']
+test_df['flag'] = 11
 
 df = pd.concat([train_df, test_df], sort=False, axis=0)
-preprocess_ts(df)
-# # 排序 相减
-# df = df.sort_values(by=['guid', 'raw_ts'], ascending=False)
-# df['ts_1'] = df['raw_ts'].shift(1)
-# df['ts_1'].fillna(1573142399626, inplace=True)
-# df['ts_diff'] = df['raw_ts'] - df['ts_1']
-# df['ts_diff'] = df['ts_diff'] / 10000
-# print(df[['raw_ts', 'ts_1', 'ts_diff']])
-# statics()
-app_df = pd.read_csv(root / 'app.csv')
-user_df = pd.read_csv(root / 'user.csv')
+del train_df, test_df
+gc.collect()
 
-# print(df)
-# print(df.info())
+# guid  缺失值处理 当做游客 abc填充
+df['guid'] = df['guid'].fillna('abc')
+# -------------- 数据预处理 end -----------------
+
+# -------------- 特征工程 -----------------
 
 cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
             ['pos', 'osversion']
@@ -403,29 +397,29 @@ def get_cvr_fea(data, cat_list=None):
     return data
 
 
-# df = get_news_fea(df)
-# df = get_combination_fea(df)
+df = get_news_fea(df)
+df = get_combination_fea(df)
+#
+app_fea = get_app_fea()
+df = pd.merge(df, app_fea, on='deviceid', how='left')
+del app_fea
+gc.collect()
 
-# app_fea = get_app_fea()
-# df = pd.merge(df, app_fea, on='deviceid', how='left')
-# del app_fea
-# gc.collect()
-#
-# user_fea = get_user_fea()
-# df = pd.merge(df, user_fea, on='deviceid', how='left')
-# del user_fea
-# gc.collect()
-#
-# outertag_fea = get_outertag_fea()
-# df = pd.merge(df, outertag_fea, on='deviceid', how='left')
-# del outertag_fea
-# gc.collect()
-#
-# tag_fea = get_tag_fea()
-# df = pd.merge(df, tag_fea, on='deviceid', how='left')
-# del tag_fea
-# gc.collect()
-#
+user_fea = get_user_fea()
+df = pd.merge(df, user_fea, on='deviceid', how='left')
+del user_fea
+gc.collect()
+
+outertag_fea = get_outertag_fea()
+df = pd.merge(df, outertag_fea, on='deviceid', how='left')
+del outertag_fea
+gc.collect()
+
+tag_fea = get_tag_fea()
+df = pd.merge(df, tag_fea, on='deviceid', how='left')
+del tag_fea
+gc.collect()
+
 # cluster_fea = pd.read_csv('features/01_user_cluster.csv')
 # df = pd.merge(df, cluster_fea, on='deviceid', how='left')
 # del cluster_fea
@@ -444,7 +438,7 @@ def get_deepfm(data):
     # 把相隔广告曝光相隔时间较短的数据视为同一个事件，这里暂取间隔为3min
     # rank按时间排序同一个事件中每条数据发生的前后关系
     group = data.groupby('deviceid')
-    data['gap_before'] = group['raw_ts'].shift(0) - group['raw_ts'].shift(1)
+    data['gap_before'] = group['ts'].shift(0) - group['ts'].shift(1)
     data['gap_before'] = data['gap_before'].fillna(3 * 60 * 1000)
     INDEX = data[data['gap_before'] > (3 * 60 * 1000 - 1)].index
     data['gap_before'] = np.log(data['gap_before'] // 1000 + 1)
@@ -459,12 +453,12 @@ def get_deepfm(data):
     ts_len += [(len(data) - INDEX[LENGTH - 1])] * (len(data) - INDEX[LENGTH - 1])
     data['ts_before_group'] = ts_group
     data['ts_before_len'] = ts_len
-    data['ts_before_rank'] = group['raw_ts'].apply(lambda x: (x).rank())
+    data['ts_before_rank'] = group['ts'].apply(lambda x: (x).rank())
     data['ts_before_rank'] = (data['ts_before_rank'] - 1) / \
                              (data['ts_before_len'] - 1)
     # del ts_group
     group = data.groupby('deviceid')
-    data['gap_after'] = group['raw_ts'].shift(-1) - group['raw_ts'].shift(0)
+    data['gap_after'] = group['ts'].shift(-1) - group['ts'].shift(0)
     data['gap_after'] = data['gap_after'].fillna(3 * 60 * 1000)
     INDEX = data[data['gap_after'] > (3 * 60 * 1000 - 1)].index
     data['gap_after'] = np.log(data['gap_after'] // 1000 + 1)
@@ -477,7 +471,7 @@ def get_deepfm(data):
         ts_len += [(INDEX[i] - INDEX[i - 1])] * (INDEX[i] - INDEX[i - 1])
     data['ts_after_group'] = ts_group
     data['ts_after_len'] = ts_len
-    data['ts_after_rank'] = group['raw_ts'].apply(lambda x: (-x).rank())
+    data['ts_after_rank'] = group['ts'].apply(lambda x: (-x).rank())
     data['ts_after_rank'] = (data['ts_after_rank'] - 1) / (data['ts_after_len'] - 1)
     # del group, ts_group
 
@@ -534,9 +528,9 @@ def get_deepfm(data):
     data = pd.merge(data, user, on=['deviceid', 'guid'], how='left')
     # del user
     from scipy import stats
-    min_time = data['raw_ts'].min()
+    min_time = data['ts'].min()
     data['timestamp'] -= min_time
-    data['raw_ts'] -= min_time
+    data['ts'] -= min_time
     data['lat_int'] = np.int64(np.rint(data['lat'] * 100))
     data['lng_int'] = np.int64(np.rint(data['lng'] * 100))
     # data.loc[data['level'].isna() == False, 'level_int'] = np.int64(
@@ -563,34 +557,115 @@ df = get_deepfm(df)
 df['day_diff'] = np.sign(df[['day']].diff().fillna(0))
 df['hour_diff'] = np.sign(df[['hour']].diff().fillna(0))
 df['minute_diff'] = np.sign(df[['minute']].diff().fillna(0))
+# 构造历史特征 分别统计前一天 guid deviceid 的相关信息
+# 8 9 10 11
+history_9 = df[df['day'] == 8]
+history_10 = df[df['day'] == 9]
+history_11 = df[df['day'] == 10]
+history_12 = df[df['day'] == 11]
+del df
+gc.collect()
+# 61326
+# 64766
+# 66547
+# 41933
+# 42546
+print(len(set(history_9['deviceid'])))
+print(len(set(history_10['deviceid'])))
+print(len(set(history_11['deviceid'])))
+print(len(set(history_12['deviceid'])))
+print(len(set(history_9['deviceid']) & set(history_10['deviceid'])))
+print(len(set(history_10['deviceid']) & set(history_11['deviceid'])))
+print(len(set(history_11['deviceid']) & set(history_12['deviceid'])))
 
-df = reduce_mem_usage(df)
+# 61277
+# 64284
+# 66286
+# 41796
+# 42347
+
+print(len(set(history_9['guid'])))
+print(len(set(history_10['guid'])))
+print(len(set(history_11['guid'])))
+print(len(set(history_12['guid'])))
+print(len(set(history_9['guid']) & set(history_10['guid'])))
+print(len(set(history_10['guid']) & set(history_11['guid'])))
+print(len(set(history_11['guid']) & set(history_12['guid'])))
+
+# 640066
+# 631547
+# 658787
+# 345742
+# 350542
+
+print(len(set(history_9['newsid'])))
+print(len(set(history_10['newsid'])))
+print(len(set(history_11['newsid'])))
+print(len(set(history_12['newsid'])))
+print(len(set(history_9['newsid']) & set(history_10['newsid'])))
+print(len(set(history_10['newsid']) & set(history_11['newsid'])))
+print(len(set(history_11['newsid']) & set(history_12['newsid'])))
+
+
+# deviceid guid timestamp ts 时间特征
+def get_history_visit_time(data1, date2):
+    data1 = data1.sort_values(['ts', 'timestamp'])
+    data1['timestamp_ts'] = data1['timestamp'] - data1['ts']
+    data1_tmp = data1[data1['target'] == 1].copy()
+    del data1
+    for col in ['deviceid', 'guid']:
+        for ts in ['timestamp_ts']:
+            f_tmp = data1_tmp.groupby([col], as_index=False)[ts].agg({
+                '{}_{}_max'.format(col, ts): 'max',
+                '{}_{}_mean'.format(col, ts): 'mean',
+                '{}_{}_min'.format(col, ts): 'min',
+                '{}_{}_median'.format(col, ts): 'median'
+            })
+        date2 = pd.merge(date2, f_tmp, on=[col], how='left', copy=False)
+
+    return date2
+
+
+history_10 = get_history_visit_time(history_9, history_10)
+history_11 = get_history_visit_time(history_10, history_11)
+history_12 = get_history_visit_time(history_11, history_12)
+
+data = pd.concat([history_10, history_11], axis=0, sort=False, ignore_index=True)
+data = pd.concat([data, history_12], axis=0, sort=False, ignore_index=True)
+del history_9, history_10, history_11, history_12
+
+data = data.sort_values('ts')
+data['ts_next'] = data.groupby(['deviceid'])['ts'].shift(-1)
+data['ts_next_ts'] = data['ts_next'] - data['ts']
+
+# 当前一天内的特征 leak
+for col in [['deviceid'], ['guid'], ['newsid']]:
+    print(col)
+    data['{}_days_count'.format('_'.join(col))] = data.groupby(['day'] + col)['id'].transform('count')
+
+
+
+print('train and predict')
+X_train = data[data['flag'].isin([9])]
+X_valid = data[data['flag'].isin([10])]
+X_test = data[data['flag'].isin([11])]
+
+X_train_2 = data[data['flag'].isin([9, 10])]
+
+X_train = reduce_mem_usage(X_train)
+X_valid = reduce_mem_usage(X_valid)
+X_test = reduce_mem_usage(X_test)
+
 no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold'] + \
               ['id', 'target', 'timestamp', 'ts', 'isTest', 'day',
                'lat_mode', 'lng_mode', 'abtarget', 'applist_key',
                'applist_weight', 'tag_key', 'tag_weight', 'outertag_key',
-               'outertag_weight', 'newsid']
-features = [fea for fea in df.columns if fea not in no_features]
-train, test = df[:len(train_df)], df[len(train_df):]
-df.head(200).to_csv('tmp/df.csv', index=None)
-df.to_pickle('tmp/data.pickle')
-statics(df[features])
-print("df shape", df.shape)
-print("len(features),features", len(features), features)
-print(train['target'].value_counts())
-print("train shape", train.shape)
-print("test shape", test.shape)
-
-del df
-del train_df
-del test_df
-del user_df
-del app_df
-gc.collect()
+               'outertag_weight', 'newsid','datetime']
+features = [fea for fea in X_train.columns if fea not in no_features]
 
 end_time = time.time()
 print("生成特征耗时：", end_time - start_time)
 
 
 def load_data():
-    return train, test, no_features, features
+    return X_train,X_train_2, X_valid, X_test, no_features, features

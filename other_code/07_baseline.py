@@ -31,8 +31,8 @@ import datetime
 
 warnings.filterwarnings('ignore')
 
-train = pd.read_csv("data/train.csv")
-test = pd.read_csv("data/test.csv")
+train = pd.read_csv("../data/train.csv")
+test = pd.read_csv("../data/test.csv")
 data = train.append(test).reset_index(drop=True)
 def get_time_str(x):
     dateArray = datetime.datetime.utcfromtimestamp(x)
@@ -78,7 +78,7 @@ preprocess(data)
 
 
 # 提取app个数特征
-app = pd.read_csv("data/app.csv")
+app = pd.read_csv("../data/app.csv")
 app['applist'] = app['applist'].apply(lambda x: str(x)[1:-2])
 app['applist'] = app['applist'].apply(lambda x: str(x).replace(' ', '|'))
 app = app.groupby('deviceid')['applist'].apply(lambda x: '|'.join(x)).reset_index()
@@ -89,7 +89,7 @@ data = data.merge(app[['deviceid', 'app_len']], how='left', on='deviceid')
 
 del app
 
-user = pd.read_csv("data/user.csv")
+user = pd.read_csv("../data/user.csv")
 user = user.drop_duplicates('deviceid')
 data = data.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
                   how='left', on='deviceid')
