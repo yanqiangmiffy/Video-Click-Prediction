@@ -420,10 +420,10 @@ df = pd.merge(df, tag_fea, on='deviceid', how='left')
 del tag_fea
 gc.collect()
 
-# cluster_fea = pd.read_csv('features/01_user_cluster.csv')
-# df = pd.merge(df, cluster_fea, on='deviceid', how='left')
-# del cluster_fea
-# gc.collect()
+cluster_fea = pd.read_csv('features/01_user_cluster.csv')
+df = pd.merge(df, cluster_fea, on='deviceid', how='left')
+del cluster_fea
+gc.collect()
 
 user = user_df.drop_duplicates('deviceid')
 df = df.merge(user[['deviceid', 'level', 'personidentification', 'followscore', 'personalscore', 'gender']],
