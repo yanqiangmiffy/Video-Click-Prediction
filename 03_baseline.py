@@ -84,8 +84,8 @@ data = pd.concat([data, history_12], axis=0, sort=False, ignore_index=True)
 del history_9, history_10, history_11, history_12
 
 data = data.sort_values('ts')
-data['ts_next'] = data.groupby(['deviceid'])['ts'].shift(-1)
-data['ts_next_ts'] = data['ts_next'] - data['ts']
+data['deviceid_ts_next'] = data.groupby(['deviceid'])['ts'].shift(-1)
+data['deviceid_ts_next_ts'] = data['deviceid_ts_next'] - data['ts']
 
 # 当前一天内的特征 leak
 leak_cols = cate_cols = ['days', 'hour']
