@@ -57,12 +57,14 @@ history_12 = data[data['days'] == 11]
 del data
 
 
+# deviceid guid timestamp ts 时间特征
 def get_history_visit_time(data1, date2):
-    # 类别特征五折转化率特征
+    print("get_history_visit_time..")
+    data1 = data1.sort_values(['ts', 'timestamp'])
     data1['timestamp_ts'] = data1['timestamp'] - data1['ts']
     data1_tmp = data1[data1['target'] == 1].copy()
     del data1
-    for col in ['deviceid', 'guid', 'newsid']:
+    for col in ['deviceid', 'guid']:
         for ts in ['timestamp_ts']:
             f_tmp = data1_tmp.groupby([col], as_index=False)[ts].agg({
                 '{}_{}_max'.format(col, ts): 'max',
