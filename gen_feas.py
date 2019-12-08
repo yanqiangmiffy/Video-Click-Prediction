@@ -23,7 +23,7 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 
 start_time = time.time()
 
-df = pd.read_pickle('data/df.pickle')
+df = pd.read_pickle('data/tmp.pickle')
 # 构造历史特征 分别统计前一天 guid deviceid 的相关信息
 # 8 9 10 11
 history_9 = df[df['day'] == 8]
