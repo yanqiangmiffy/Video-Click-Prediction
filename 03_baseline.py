@@ -5,6 +5,7 @@ import lightgbm as lgb
 from sklearn.metrics import f1_score
 from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
+
 train = pd.read_csv('data/train.csv')
 test = pd.read_csv('data/test.csv')
 
@@ -58,20 +59,6 @@ del data
 
 def get_history_visit_time(data1, date2):
     # 类别特征五折转化率特征
-    data1['ID'] = data1.index
-    data1['fold'] = data1['ID'] % 5
-    data1.loc[data1.target.isnull(), 'fold'] = 5
-    target_feat = []
-    for i in tqdm(cate_cols):
-        target_feat.extend([i + '_mean_last_1'])
-        data1[i + '_mean_last_1'] = None
-        for fold in range(6):
-            data1.loc[data1['fold'] == fold, i + '_mean_last_1'] = data1[data1['fold'] == fold][i].map(
-                data1[(data1['fold'] != fold) & (data1['fold'] != 5)].groupby(i)['target'].mean()
-            )
-        data1[i + '_mean_last_1'] = data1[i + '_mean_last_1'].astype(float)
-
-    data1 = data1.sort_values(['ts', 'timestamp'])
     data1['timestamp_ts'] = data1['timestamp'] - data1['ts']
     data1_tmp = data1[data1['target'] == 1].copy()
     del data1
