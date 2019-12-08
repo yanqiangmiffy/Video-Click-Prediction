@@ -247,11 +247,11 @@ def get_fea(train, test, user, app):
     # del history_9, history_10, history_11, history_12
 
     # 当前一天内的特征 leak
-    for col in [['deviceid'], ['guid'], ['newsid']]:
-        print(col)
-        df['{}_days_count'.format('_'.join(col))] = df.groupby(['ts_day'] + col)['id'].transform('count')
+    # for col in [['deviceid'], ['guid'], ['newsid']]:
+    #     print(col)
+    #     df['{}_days_count'.format('_'.join(col))] = df.groupby(['ts_day'] + col)['id'].transform('count')
 
-    df = reduce_mem_usage(df, use_float16=False)
+    # df = reduce_mem_usage(df, use_float16=False)
 
     lb_feas = ['app_version', 'device_vendor', 'device_version', 'deviceid', 'guid', 'netmodel', 'newsid', 'osversion',
                'timestamp', 'outertag', 'tag', 'applist', 'ts']
