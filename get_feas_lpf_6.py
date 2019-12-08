@@ -102,8 +102,6 @@ def get_fea(train, test, user, app):
 
     df['guid'] = df['guid'].fillna('abc')
 
-
-
     cat_list = [i for i in df.columns if i not in ['id', 'lat', 'lng', 'target', 'timestamp', 'ts']] + ['level']
 
 
@@ -251,7 +249,6 @@ def get_fea(train, test, user, app):
     #     print(col)
     #     df['{}_days_count'.format('_'.join(col))] = df.groupby(['ts_day'] + col)['id'].transform('count')
 
-    # df = reduce_mem_usage(df, use_float16=False)
 
     lb_feas = ['app_version', 'device_vendor', 'device_version', 'deviceid', 'guid', 'netmodel', 'newsid', 'osversion',
                'timestamp', 'outertag', 'tag', 'applist', 'ts']
@@ -262,6 +259,7 @@ def get_fea(train, test, user, app):
         df[fea] = df[fea].astype(str)
         df[fea] = LabelEncoder().fit_transform(df[fea])
 
+    df = reduce_mem_usage(df, use_float16=False)
 
 
     train = df[df['is_test'] != 1]
