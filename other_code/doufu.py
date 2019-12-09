@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python  
 # -*- coding:utf-8 _*-
-"""
-@author: quincy qiang
-@license: Apache Licence
-@file: doufu.py
+""" 
+@author: quincy qiang 
+@license: Apache Licence 
+@file: doufu.py 
 @time: 2019/12/09
-@software: PyCharm
+@software: PyCharm 
 """
 import pandas as pd
 import numpy as np
@@ -84,10 +84,10 @@ data['guid'] = data['guid'].fillna('abc')
 
 # 构造历史特征 分别统计前一天 guid deviceid 的相关信息
 # 8 9 10 11
-history_9 = data[data['days'].isin([7, 8])]
-history_10 = data[data['days'].isin([8, 9])]
-history_11 = data[data['days'].isin([9, 10])]
-history_12 = data[data['days'].isin([10, 11])]
+history_9 = data[data['days'] == 8]
+history_10 = data[data['days'] == 9]
+history_11 = data[data['days'] == 10]
+history_12 = data[data['days'] == 11]
 del data
 # 61326
 # 64766
