@@ -69,8 +69,8 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     valid_pred = bst.predict(X_valid)
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
     print("训练验证集f1-score:", f1_score(y_valid, valid_pred))
-    y_pred_all_l1 += pred(test[features].values, bst)
     cv_score.append(f1_score(y_valid, valid_pred))
+
     # 历史验证集
     p_test = bst.predict_proba(X_valid_hist[features].values)[:, 1]
     xx_score = X_valid_hist[['target']].copy()
@@ -81,6 +81,9 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     xx_score['score'] = xx_score['score'].fillna(0)
     print("历史验证集 f1_score", f1_score(xx_score['target'], xx_score['score']))
     hist_cv_score.append(f1_score(xx_score['target'], xx_score['score']))
+
+    # 测试集预测
+    y_pred_all_l1 += pred(test[features].values, bst)
 
     fea_importances += bst.feature_importances_
     del bst
@@ -112,4 +115,4 @@ submit_score['target'] = submit_score['target'].astype(int)
 sample = pd.read_csv('data/sample.csv')
 sample.columns = ['id', 'non_target']
 submit_score = pd.merge(sample, submit_score, on=['id'], how='left')
-submit_score[['id', 'target']].to_csv('result/baseline{}.csv'.format(1), index=False)
+submit_score[['id', 'target']].to_csv('result/baseline{}.csv'.format(np.mean(cv_score)), index=False)
