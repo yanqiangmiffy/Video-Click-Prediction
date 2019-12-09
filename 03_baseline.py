@@ -13,8 +13,8 @@ import time, datetime
 import lightgbm as lgb
 from sklearn.metrics import f1_score
 
-train = pd.read_csv('./train.csv')
-test = pd.read_csv('./test.csv')
+train = pd.read_csv('data/train.csv')
+test = pd.read_csv('data/test.csv')
 
 # 对数据进行排序
 train = train.sort_values(['deviceid', 'guid', 'ts'])
@@ -238,8 +238,8 @@ submit_score['target'] = submit_score['target'].fillna(0)
 submit_score = submit_score.sort_values('id')
 submit_score['target'] = submit_score['target'].astype(int)
 
-sample = pd.read_csv('./sample.csv')
+sample = pd.read_csv('data/sample.csv')
 sample.columns = ['id', 'non_target']
 submit_score = pd.merge(sample, submit_score, on=['id'], how='left')
 
-submit_score[['id', 'target']].to_csv('./baseline{}.csv'.format(str(f1)), index=False)
+submit_score[['id', 'target']].to_csv('data/baseline{}.csv'.format(str(f1)), index=False)
