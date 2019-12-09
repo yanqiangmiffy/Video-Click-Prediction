@@ -3,28 +3,18 @@ import numpy as np
 import time, datetime
 import lightgbm as lgb
 from sklearn.metrics import f1_score
+import gc
+from tqdm import tqdm
 
 train = pd.read_csv('data/train.csv')
 test = pd.read_csv('data/test.csv')
 
+df_app = pd.read_pickle('data/app.csv')
+df_user = pd.read_pickle('data/user.csv')
+
 # 对数据进行排序
 train = train.sort_values(['deviceid', 'guid', 'ts'])
 test = test.sort_values(['deviceid', 'guid', 'ts'])
-
-# 查看数据是否存在交集
-# train deviceid 104736
-# test deviceid 56681
-# train&test deviceid 46833
-# train guid 104333
-# test guid 56861
-# train&test guid 46654
-
-print('train deviceid', len((set(train['deviceid']))))
-print('test deviceid', len((set(test['deviceid']))))
-print('train&test deviceid', len((set(train['deviceid']) & set(test['deviceid']))))
-print('train guid', len((set(train['guid']))))
-print('test guid', len((set(test['guid']))))
-print('train&test guid', len((set(train['guid']) & set(test['guid']))))
 
 
 # 时间格式转化 ts
@@ -40,22 +30,6 @@ test['datetime'] = test['ts'].apply(time_data2)
 train['datetime'] = pd.to_datetime(train['datetime'])
 test['datetime'] = pd.to_datetime(test['datetime'])
 
-# 时间范围
-# 2019-11-07 23:59:59 2019-11-10 23:59:59
-# 2019-11-10 23:59:59 2019-11-11 23:59:59
-print(train['datetime'].min(), train['datetime'].max())
-print(test['datetime'].min(), test['datetime'].max())
-# 7     0.000000
-# 8     0.107774
-# 9     0.106327
-# 10    0.105583
-
-# 7          11
-# 8     3674871
-# 9     3743690
-# 10    3958109
-# 11    3653592
-
 train['days'] = train['datetime'].dt.day
 test['days'] = test['datetime'].dt.day
 
@@ -64,6 +38,210 @@ test['flag'] = 11
 
 # 8 9 10 11
 data = pd.concat([train, test], axis=0, sort=False)
+
+
+# 全局特征
+
+
+def get_app_fea():
+    print("生成 app 特征....")
+    app_grouped_df = pd.DataFrame({'deviceid': df_app['deviceid'].unique()})
+
+    # 统计一个设备的出现过的app总数
+    df_app['app_nums'] = df_app['applist'].apply(lambda x: len(x.replace('[', '').replace(']', '').split(' ')))
+    df_app.app_nums.head()
+
+    grouped_df = df_app.groupby(by='deviceid').agg({'app_nums': ['sum']})
+    grouped_df.columns = ['app_nums_sum']
+    grouped_df = grouped_df.reset_index()
+    app_grouped_df = pd.merge(app_grouped_df, grouped_df, on='deviceid', how='left')
+
+    # 统计一个设备上applist对应的不同device个数总数
+    df_app['applist_count'] = df_app.groupby('applist')['deviceid'].transform('count')
+    grouped_df = df_app.groupby(by='deviceid').agg({'applist_count': ['sum']})
+    grouped_df.columns = ['applist_count_sum']
+    grouped_df = grouped_df.reset_index()
+    app_grouped_df = pd.merge(app_grouped_df, grouped_df, on='deviceid', how='left')
+
+    return app_grouped_df
+
+
+def get_user_fea():
+    print("生成 user 特征....")
+
+    user_grouped_df = pd.DataFrame({'deviceid': df_user['deviceid'].unique()})
+
+    # 统计一个设备的注册不同用户个数
+    grouped_df = df_user.groupby(by='deviceid').agg({'guid': ['nunique']})
+    grouped_df.columns = ['deviceid_unique_guid']
+    grouped_df = grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+    df_user['deviceid_nunique_guid'] = df_user.groupby('deviceid').guid.transform('nunique')
+
+    # 一个设备的outertag 的统计
+    def get_outertag_nums(x):
+        """
+        获取一个outertag的tag个数
+        """
+        if x == 'nan':
+            return 0
+        return len(x.split('|')) - 1
+
+    def get_outertag_score(x):
+        """
+        获取一个outertag的tag分数和
+        """
+        tags = x.split('|')
+
+        score = 0
+        if len(tags) == 1 and tags[0] == 'nan':
+            return score
+        else:
+            for tag in tags:
+                if len(tag.split(':')) == 2:
+                    score += float(tag.split(':')[1])
+                else:
+                    score += 0
+        return score
+
+    df_user['outertag_nums'] = df_user['outertag'].astype('str').apply(lambda x: get_outertag_nums(x))
+    df_user['outertag_score'] = df_user['outertag'].astype('str').apply(lambda x: get_outertag_score(x))
+
+    df_user['tag_nums'] = df_user['tag'].astype('str').apply(lambda x: get_outertag_nums(x))
+    df_user['tag_score'] = df_user['tag'].astype('str').apply(lambda x: get_outertag_score(x))
+
+    grouped_df = df_user.groupby(by='deviceid').agg({'outertag_nums': ['sum']})
+    grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+    grouped_df = df_user.groupby(by='deviceid').agg({'outertag_score': ['sum']})
+    grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+    grouped_df = df_user.groupby(by='deviceid').agg({'tag_nums': ['sum']})
+    grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+    grouped_df = df_user.groupby(by='deviceid').agg({'tag_score': ['sum']})
+    grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    #
+    # 设备的用户等级统计
+    grouped_df = df_user.groupby(by='deviceid').agg({'level': ['sum']})
+    grouped_df.columns = ['deviceid_level_sum']
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+    # 设备的用户劣质统计
+    # 1表示劣质用户 0表示正常用户。
+    grouped_df = df_user.groupby(by='deviceid').agg({'personidentification': ['sum']})
+    grouped_df.columns = ['deviceid_personidentification_sum']
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+    grouped_df = df_user.groupby(by='deviceid').agg({'personalscore': ['sum']})
+    grouped_df.columns = ['deviceid_personalscore_sum']
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+    #
+    grouped_df = df_user.groupby(by='deviceid').agg({'followscore': ['sum']})
+    grouped_df.columns = ['deviceid_followscore_sum']
+    grouped_df.reset_index()
+    user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+    return user_grouped_df
+
+
+def get_outertag_fea():
+    print("get_outertag_fea....")
+    df_user['outertag'] = df_user['outertag'].astype(str)
+    grouped_df = df_user.groupby('deviceid').agg({'outertag': '|'.join})
+    grouped_df.columns = ['deviceid_' + 'outertag']
+    # 最受欢迎的50个outertag
+    all_outertag = {}
+    for x in df_user.outertag:
+        tags = x.split('|')
+        if tags[0] != 'nan':
+            for tag in tags:
+                tmp = tag.split(':')
+                if len(tmp) == 2:
+                    if tmp[0] in all_outertag:
+                        all_outertag[tmp[0]] += float(tmp[1])
+                    else:
+                        all_outertag[tmp[0]] = 0
+                        all_outertag[tmp[0]] += float(tmp[1])
+    top_outertag = {}
+    for tag, score in sorted(all_outertag.items(), key=lambda item: item[1], reverse=True)[:5]:
+        top_outertag[tag] = score
+    for tag in top_outertag:
+        grouped_df[tag] = grouped_df['deviceid_outertag'].apply(lambda x: top_outertag[tag] if tag in x else 0)
+    del top_outertag, all_outertag
+    del grouped_df['deviceid_outertag']
+    gc.collect()
+
+    return grouped_df
+
+
+def get_tag_fea():
+    # 最受欢迎的100个tag
+    print("get_tag_fea....")
+    df_user['tag'] = df_user['tag'].astype(str)
+    grouped_df = df_user.groupby('deviceid').agg({'tag': '|'.join})
+    grouped_df.columns = ['deviceid_' + 'tag']
+    all_tag = {}
+    for x in df_user.tag:
+        tags = x.split('|')
+        if tags[0] != 'nan':
+            for tag in tags:
+                tmp = tag.split(':')
+                if len(tmp) == 2:
+                    if tmp[0] in all_tag:
+                        all_tag[tmp[0]] += float(tmp[1])
+                    else:
+                        all_tag[tmp[0]] = 0
+                        all_tag[tmp[0]] += float(tmp[1])
+    top_tag = {}
+    for tag, score in sorted(all_tag.items(), key=lambda item: item[1], reverse=True)[:10]:
+        top_tag[tag] = score
+
+    for tag in top_tag:
+        grouped_df[tag] = grouped_df['deviceid_tag'].apply(lambda x: top_tag[tag] if tag in x else 0)
+    del top_tag, all_tag
+    del grouped_df['deviceid_tag']
+    gc.collect()
+    return grouped_df
+
+
+app_fea = get_app_fea()
+data = pd.merge(data, app_fea, on='deviceid', how='left')
+del app_fea
+gc.collect()
+
+user_fea = get_user_fea()
+data = pd.merge(data, user_fea, on='deviceid', how='left')
+del user_fea
+gc.collect()
+
+outertag_fea = get_outertag_fea()
+data = pd.merge(data, outertag_fea, on='deviceid', how='left')
+del outertag_fea
+gc.collect()
+
+tag_fea = get_tag_fea()
+data = pd.merge(data, tag_fea, on='deviceid', how='left')
+del tag_fea
+gc.collect()
+
+cluster_fea = pd.read_csv('features/01_user_cluster.csv')
+data = pd.merge(data, cluster_fea, on='deviceid', how='left')
+del cluster_fea
+gc.collect()
+
 del train, test
 
 # 小时信息
@@ -79,47 +257,8 @@ history_9 = data[data['days'] == 8]
 history_10 = data[data['days'] == 9]
 history_11 = data[data['days'] == 10]
 history_12 = data[data['days'] == 11]
+
 del data
-# 61326
-# 64766
-# 66547
-# 41933
-# 42546
-print(len(set(history_9['deviceid'])))
-print(len(set(history_10['deviceid'])))
-print(len(set(history_11['deviceid'])))
-print(len(set(history_12['deviceid'])))
-print(len(set(history_9['deviceid']) & set(history_10['deviceid'])))
-print(len(set(history_10['deviceid']) & set(history_11['deviceid'])))
-print(len(set(history_11['deviceid']) & set(history_12['deviceid'])))
-
-# 61277
-# 64284
-# 66286
-# 41796
-# 42347
-
-print(len(set(history_9['guid'])))
-print(len(set(history_10['guid'])))
-print(len(set(history_11['guid'])))
-print(len(set(history_12['guid'])))
-print(len(set(history_9['guid']) & set(history_10['guid'])))
-print(len(set(history_10['guid']) & set(history_11['guid'])))
-print(len(set(history_11['guid']) & set(history_12['guid'])))
-
-# 640066
-# 631547
-# 658787
-# 345742
-# 350542
-
-print(len(set(history_9['newsid'])))
-print(len(set(history_10['newsid'])))
-print(len(set(history_11['newsid'])))
-print(len(set(history_12['newsid'])))
-print(len(set(history_9['newsid']) & set(history_10['newsid'])))
-print(len(set(history_10['newsid']) & set(history_11['newsid'])))
-print(len(set(history_11['newsid']) & set(history_12['newsid'])))
 
 
 # deviceid guid timestamp ts 时间特征
@@ -141,6 +280,138 @@ def get_history_visit_time(data1, date2):
 
     return date2
 
+
+def get_news_fea(df):
+    print("get_news_fea....")
+    # 视频出现次数
+    df['news_count'] = df.groupby('newsid')['id'].transform('count')  #
+    # df['news_target_sum'] = df.groupby('newsid')['target'].transform('sum')  # 点击次数
+    # 视频推荐的人数
+    df['news_guid_unique'] = df.groupby(by='newsid')['guid'].transform('nunique')  # 人数
+
+    df['news_deviceid_unique'] = df.groupby(by='newsid')['deviceid'].transform('nunique')  # 设备
+    df['news_pos_unique'] = df.groupby(by='newsid')['pos'].transform('nunique')
+    df['news_app_version_unique'] = df.groupby(by='newsid')['app_version'].transform('nunique')
+    df['news_device_vendor_unique'] = df.groupby(by='newsid')['device_vendor'].transform('nunique')
+    df['news_netmodel_unique'] = df.groupby(by='newsid')['netmodel'].transform('nunique')
+    df['news_osversion_unique'] = df.groupby(by='newsid')['osversion'].transform('nunique')
+    df['news_device_version_unique'] = df.groupby(by='newsid')['device_version'].transform('nunique')
+
+    df['news_lng_unique'] = df.groupby(by='newsid')['lng'].transform('nunique')  # 地理
+    df['news_lat_unique'] = df.groupby(by='newsid')['lat'].transform('nunique')
+
+    # 时间阶段出现的次数
+    df['news_hour_unique'] = df.groupby(by='newsid')['hour'].transform('nunique')  # 地理
+    df['news_dayofweek_unique'] = df.groupby(by='newsid')['dayofweek'].transform('nunique')
+
+    # 逆向unique
+    df['guid_news_unique'] = df.groupby(by='guid')['newsid'].transform('nunique')  # 人数
+    df['deviceid_news_unique'] = df.groupby(by='deviceid')['newsid'].transform('nunique')  # 设备
+    df['pos_news_unique'] = df.groupby(by='pos')['newsid'].transform('nunique')
+    df['app_version_news_unique'] = df.groupby(by='app_version')['newsid'].transform('nunique')
+    df['device_vendor_news_unique'] = df.groupby(by='device_vendor')['newsid'].transform('nunique')
+    df['netmodel_news_unique'] = df.groupby(by='netmodel')['newsid'].transform('nunique')
+    df['osversion_news_unique'] = df.groupby(by='osversion')['newsid'].transform('nunique')
+    df['device_version_news_unique'] = df.groupby(by='device_version')['newsid'].transform('nunique')
+    df['lng_news_unique'] = df.groupby(by='lng')['newsid'].transform('nunique')  # 地理
+    df['lat_news_unique'] = df.groupby(by='lat')['newsid'].transform('nunique')
+    df['hour_news_unique'] = df.groupby(by='hour')['newsid'].transform('nunique')  # 地理
+    df['dayofweek_news_unique'] = df.groupby(by='dayofweek')['newsid'].transform('nunique')
+    return df
+
+
+def get_ctr_fea(df):
+    print("get_ctr_fea....")
+    df['news_ctr_rate'] = df.groupby('newsid')['target'].transform('mean')  #
+    # df['lat_ctr_rate'] = df.groupby('lat')['target'].transform('mean')  #
+    # df['lng_ctr_rate'] = df.groupby('lng')['target'].transform('mean')  #
+    # df['ts_ctr_rate'] = df.groupby('ts')['target'].transform('mean')  #
+    # df['deviceid_ctr_rate'] = df.groupby('deviceid')['target'].transform('mean')  #
+    # df['guid_ctr_rate'] = df.groupby('guid')['target'].transform('mean')  #
+    # df['device_version_ctr_rate'] = df.groupby('device_version')['target'].transform('mean')  #
+    # df['device_vendor_ctr_rate'] = df.groupby('device_vendor')['target'].transform('mean')  #
+    # df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
+    # df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
+    # df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
+    df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
+    return df
+
+
+def get_combination_fea(df):
+    """
+    添加组合特征
+    :return:
+    """
+    print('添加组合特征...')
+    combination_cols = []
+    df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+    df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
+
+    df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
+
+    df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+    df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
+
+    combination_cols.extend([
+        'deviceid_newsid', 'guid_newsid',
+        'pos_newsid', 'device_vendor_newsid',
+        'lng_newsid', 'hour_newsid',
+        'dayofweek_newsid', 'dayofweek_hour',
+        'netmodel_hour', 'netmodel_dayofweek'
+    ])
+
+    for col in combination_cols:
+        print(col)
+        df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
+        del df[col]
+        gc.collect()
+    return df
+
+
+def get_cvr_fea(df):
+    cat_list = set(['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
+                   ['pos', 'osversion'] + \
+                   ['deviceid', 'level', 'personidentification', 'followscore', 'personalscore',
+                    'gender'])
+    print("cat_list", cat_list)
+
+    # 类别特征五折转化率特征
+    print("转化率特征....")
+    df['ID'] = df.index
+    df['fold'] = df['ID'] % 5
+    df.loc[df.target.isnull(), 'fold'] = 5
+    target_feat = []
+    for i in tqdm(cat_list):
+        target_feat.extend([i + '_mean_last_1'])
+        df[i + '_mean_last_1'] = None
+        for fold in range(6):
+            df.loc[df['fold'] == fold, i + '_mean_last_1'] = df[df['fold'] == fold][i].map(
+                df[(df['fold'] != fold) & (df['fold'] != 5)].groupby(i)['target'].mean()
+            )
+        df[i + '_mean_last_1'] = df[i + '_mean_last_1'].astype(float)
+
+    return df
+
+
+history_9 = get_news_fea(history_9)
+history_10 = get_news_fea(history_10)
+history_11 = get_news_fea(history_11)
+history_12 = get_news_fea(history_12)
+
+history_9 = get_ctr_fea(history_9)
+history_10 = get_ctr_fea(history_10)
+history_11 = get_ctr_fea(history_11)
+history_12 = get_ctr_fea(history_12)
+
+history_9 = get_combination_fea(history_9)
+history_10 = get_combination_fea(history_10)
+history_11 = get_combination_fea(history_11)
+history_12 = get_combination_fea(history_12)
 
 history_10 = get_history_visit_time(history_9, history_10)
 history_11 = get_history_visit_time(history_10, history_11)
