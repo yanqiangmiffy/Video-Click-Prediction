@@ -20,14 +20,16 @@ test = X_test
 sample_submission = pd.read_csv('data/sample.csv')
 print(features)
 
+label = ['target']
 n_fold = 5
 y_scores = 0
 test_size = test.shape[0]
-y_pred_all_l1 = np.zeros(test_size)
 
+y_pred_all_l1 = np.zeros(test_size)
 fea_importances = np.zeros(len(features))
-label = ['target']
 train[label] = train[label].astype(int)
+cv_score = []
+hist_cv_score = []
 
 
 def pred(X_test, model, batch_size=10000):
@@ -66,9 +68,9 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
             early_stopping_rounds=50)
     valid_pred = bst.predict(X_valid)
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
-    print("f1-score:", f1_score(y_valid, valid_pred))
+    print("训练验证集f1-score:", f1_score(y_valid, valid_pred))
     y_pred_all_l1 += pred(test[features].values, bst)
-
+    cv_score.append(f1_score(y_valid, valid_pred))
     # 历史验证集
     p_test = bst.predict_proba(X_valid[features].values)[:, 1]
     xx_score = X_valid[['target']].copy()
@@ -78,14 +80,17 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     xx_score.loc[xx_score.index <= int(xx_score.shape[0] * 0.103), 'score'] = 1
     xx_score['score'] = xx_score['score'].fillna(0)
     print("历史验证集 f1_score", f1_score(xx_score['target'], xx_score['score']))
-
-    # 训练完成 发送邮件
-    mail(str(i) + "lgb cpu 训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
+    hist_cv_score.append(f1_score(xx_score['target'], xx_score['score']))
 
     fea_importances += bst.feature_importances_
     del bst
     del valid_pred
     gc.collect()
+
+print("cv_score", cv_score)
+print("hist_cv_score", hist_cv_score)
+# 训练完成 发送邮件
+mail("lgb cpu 训练完成，cv f1-score:{}".format(np.mean(cv_score)))
 
 fea_importance_df = pd.DataFrame({
     'features': features,
