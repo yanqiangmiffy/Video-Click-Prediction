@@ -6,8 +6,8 @@ from sklearn.metrics import f1_score
 import gc
 from tqdm import tqdm
 
-train = pd.read_csv('data/train.csv')[:100000]
-test = pd.read_csv('data/test.csv')[:100000]
+train = pd.read_csv('data/train.csv')
+test = pd.read_csv('data/test.csv')
 
 df_app = pd.read_csv('data/app.csv')
 df_user = pd.read_csv('data/user.csv')
