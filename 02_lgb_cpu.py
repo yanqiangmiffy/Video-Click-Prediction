@@ -14,7 +14,7 @@ from utils import *
 from tqdm import tqdm
 import types
 
-X_train, X_train_2, X_valid, X_test, no_features, features = load_data()
+X_train, X_train_2, X_valid_hist, X_test, no_features, features = load_data()
 train = X_train_2
 test = X_test
 sample_submission = pd.read_csv('data/sample.csv')
@@ -72,8 +72,8 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     y_pred_all_l1 += pred(test[features].values, bst)
     cv_score.append(f1_score(y_valid, valid_pred))
     # 历史验证集
-    p_test = bst.predict_proba(X_valid[features].values)[:, 1]
-    xx_score = X_valid[['target']].copy()
+    p_test = bst.predict_proba(X_valid_hist[features].values)[:, 1]
+    xx_score = X_valid_hist[['target']].copy()
     xx_score['predict'] = p_test
     xx_score = xx_score.sort_values('predict', ascending=False)
     xx_score = xx_score.reset_index()
