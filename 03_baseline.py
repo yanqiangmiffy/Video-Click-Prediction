@@ -247,6 +247,7 @@ del train, test
 # 小时信息
 data['hour'] = data['datetime'].dt.hour
 data['minute'] = data['datetime'].dt.minute
+data['dayofweek'] = data['datetime'].dt.dayofweek
 
 # 缺失值填充
 data['guid'] = data['guid'].fillna('abc')
@@ -440,7 +441,8 @@ print('train and predict')
 X_train = data[data['flag'].isin([9])]
 X_valid = data[data['flag'].isin([10])]
 X_test = data[data['flag'].isin([11])]
-
+X_train_2 = data[data['flag'].isin([9, 10])]
+del data
 lgb_param = {
     'learning_rate': 0.1,
     'boosting_type': 'gbdt',
@@ -490,7 +492,6 @@ del X_train, X_valid
 # 0.5129179717875857
 # 0.5197833317587095
 # 0.6063125458760602
-X_train_2 = data[data['flag'].isin([9, 10])]
 
 lgb_train_2 = lgb.Dataset(X_train_2[feature].values, X_train_2[target].values)
 lgb_model_2 = lgb.train(lgb_param, lgb_train_2, num_boost_round=lgb_model.best_iteration, valid_sets=[lgb_train_2],
