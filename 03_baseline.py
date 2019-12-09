@@ -6,11 +6,11 @@ from sklearn.metrics import f1_score
 import gc
 from tqdm import tqdm
 
-train = pd.read_csv('data/train.csv')
-test = pd.read_csv('data/test.csv')
+train = pd.read_csv('data/train.csv')[:100000]
+test = pd.read_csv('data/test.csv')[:100000]
 
-df_app = pd.read_pickle('data/app.csv')
-df_user = pd.read_pickle('data/user.csv')
+df_app = pd.read_csv('data/app.csv')
+df_user = pd.read_csv('data/user.csv')
 
 # 对数据进行排序
 train = train.sort_values(['deviceid', 'guid', 'ts'])
