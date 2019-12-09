@@ -251,7 +251,17 @@ data['dayofweek'] = data['datetime'].dt.dayofweek
 
 # 缺失值填充
 data['guid'] = data['guid'].fillna('abc')
+from sklearn.preprocessing import LabelEncoder
 
+cate_cols = ['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
+            ['pos', 'osversion']
+
+# df=pd.get_dummies(df,columns=cate_cols)
+for col in cate_cols:
+    lb = LabelEncoder()
+    data[col] = data[col].fillna('999')
+    data[col] = lb.fit_transform(data[col])
+    data['{}_count'] = data.groupby(col)['id'].transform('count')  #
 # 构造历史特征 分别统计前一天 guid deviceid 的相关信息
 # 8 9 10 11
 history_9 = data[data['days'] == 8]
@@ -321,21 +331,21 @@ def get_news_fea(df):
     return df
 
 
-def get_ctr_fea(df):
-    print("get_ctr_fea....")
-    df['news_ctr_rate'] = df.groupby('newsid')['target'].transform('mean')  #
-    # df['lat_ctr_rate'] = df.groupby('lat')['target'].transform('mean')  #
-    # df['lng_ctr_rate'] = df.groupby('lng')['target'].transform('mean')  #
-    # df['ts_ctr_rate'] = df.groupby('ts')['target'].transform('mean')  #
-    # df['deviceid_ctr_rate'] = df.groupby('deviceid')['target'].transform('mean')  #
-    # df['guid_ctr_rate'] = df.groupby('guid')['target'].transform('mean')  #
-    # df['device_version_ctr_rate'] = df.groupby('device_version')['target'].transform('mean')  #
-    # df['device_vendor_ctr_rate'] = df.groupby('device_vendor')['target'].transform('mean')  #
-    # df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
-    # df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
-    # df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
-    df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
-    return df
+# def get_ctr_fea(df):
+#     print("get_ctr_fea....")
+#     df['news_ctr_rate'] = df.groupby('newsid')['target'].transform('mean')  #
+#     # df['lat_ctr_rate'] = df.groupby('lat')['target'].transform('mean')  #
+#     # df['lng_ctr_rate'] = df.groupby('lng')['target'].transform('mean')  #
+#     # df['ts_ctr_rate'] = df.groupby('ts')['target'].transform('mean')  #
+#     # df['deviceid_ctr_rate'] = df.groupby('deviceid')['target'].transform('mean')  #
+#     # df['guid_ctr_rate'] = df.groupby('guid')['target'].transform('mean')  #
+#     # df['device_version_ctr_rate'] = df.groupby('device_version')['target'].transform('mean')  #
+#     # df['device_vendor_ctr_rate'] = df.groupby('device_vendor')['target'].transform('mean')  #
+#     # df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
+#     # df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
+#     # df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
+#     df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
+#     return df
 
 
 def get_combination_fea(df):
@@ -404,10 +414,10 @@ history_10 = get_news_fea(history_10)
 history_11 = get_news_fea(history_11)
 history_12 = get_news_fea(history_12)
 
-history_9 = get_ctr_fea(history_9)
-history_10 = get_ctr_fea(history_10)
-history_11 = get_ctr_fea(history_11)
-history_12 = get_ctr_fea(history_12)
+# history_9 = get_ctr_fea(history_9)
+# history_10 = get_ctr_fea(history_10)
+# history_11 = get_ctr_fea(history_11)
+# history_12 = get_ctr_fea(history_12)
 
 history_9 = get_combination_fea(history_9)
 history_10 = get_combination_fea(history_10)
