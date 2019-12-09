@@ -16,9 +16,7 @@ import types
 
 # from get_feas_lpf_4 import load_data
 
-X_train, X_train_2, X_valid, X_test, no_features, features = load_data()
-train = X_train_2
-test = X_test
+train, test, no_features, features = load_data()
 sample_submission = pd.read_csv('data/sample.csv')
 print(features)
 
@@ -86,17 +84,15 @@ fea_importance_df = pd.DataFrame({
 fea_importance_df.sort_values(by="importance", ascending=False).to_csv('tmp/lgb_fea_importance.csv', index=None)
 
 r = y_pred_all_l1 / n_fold
+sample_submission['target'] = r
+sample_submission.to_csv('result/lgb_prob.csv', index=False, sep=",")
 
-submit_score = X_test[['id']].copy()
-submit_score['predict'] = r
-submit_score = submit_score.sort_values('predict', ascending=False)
-submit_score = submit_score.reset_index()
-submit_score.loc[submit_score.index <= int(submit_score.shape[0] * 0.103), 'target'] = 1
-submit_score['target'] = submit_score['target'].fillna(0)
+sample_submission['target'] = [1 if x > 0.50 else 0 for x in r]
+print(sample_submission['target'].value_counts())
+sample_submission.to_csv('result/lgb_result.csv', index=False)
 
-submit_score = submit_score.sort_values('id')
-submit_score['target'] = submit_score['target'].astype(int)
-sample = pd.read_csv('data/sample.csv')
-sample.columns = ['id', 'non_target']
-submit_score = pd.merge(sample, submit_score, on=['id'], how='left')
-submit_score[['id', 'target']].to_csv('result/baseline{}.csv'.format(1), index=False)
+# plt.figure(figsize=(14, 30))
+# sns.barplot(x="importance", y="features", data=fea_importance_df.sort_values(by="importance", ascending=False))
+# plt.title('Features importance (averaged/folds)')
+# plt.tight_layout()
+# plt.show()

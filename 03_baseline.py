@@ -180,17 +180,25 @@ lgb_param = {
     'boost_from_average': 'false',
 }
 
-feature = [
-    'pos', 'netmodel', 'hour', 'minute',
-    'deviceid_timestamp_ts_max', 'deviceid_timestamp_ts_mean',
-    'deviceid_timestamp_ts_min', 'deviceid_timestamp_ts_median',
-    'guid_timestamp_ts_max', 'guid_timestamp_ts_mean',
-    'guid_timestamp_ts_min', 'guid_timestamp_ts_median',
-    'deviceid_days_count', 'guid_days_count', 'newsid_days_count',
-    'ts_next_ts'
-]
+# feature = [
+#     'pos', 'netmodel', 'hour', 'minute',
+#     'deviceid_timestamp_ts_max', 'deviceid_timestamp_ts_mean',
+#     'deviceid_timestamp_ts_min', 'deviceid_timestamp_ts_median',
+#     'guid_timestamp_ts_max', 'guid_timestamp_ts_mean',
+#     'guid_timestamp_ts_min', 'guid_timestamp_ts_median',
+#     'deviceid_days_count', 'guid_days_count', 'newsid_days_count',
+#     'ts_next_ts'
+# ]
 target = 'target'
 
+no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 'ID', 'fold'] + \
+              ['id', 'target', 'timestamp', 'ts', 'isTest', 'day',
+               'lat_mode', 'lng_mode', 'abtarget', 'applist_key',
+               'applist_weight', 'tag_key', 'tag_weight', 'outertag_key', 'tag', 'outertag',
+               'outertag_weight', 'newsid', 'datetime'] + ['days']
+
+feature = [fea for fea in X_train.columns if fea not in no_features]
+print(len(feature), feature, )
 lgb_train = lgb.Dataset(X_train[feature].values, X_train[target].values)
 lgb_valid = lgb.Dataset(X_valid[feature].values, X_valid[target].values, reference=lgb_train)
 lgb_model = lgb.train(lgb_param, lgb_train, num_boost_round=10000, valid_sets=[lgb_train, lgb_valid],
@@ -204,7 +212,7 @@ xx_score = xx_score.reset_index()
 xx_score.loc[xx_score.index <= int(xx_score.shape[0] * 0.103), 'score'] = 1
 xx_score['score'] = xx_score['score'].fillna(0)
 print(f1_score(xx_score['target'], xx_score['score']))
-
+F1_score = f1_score(xx_score['target'], xx_score['score'])
 del lgb_train, lgb_valid
 del X_train, X_valid
 # 没加 newsid 之前的 f1 score
@@ -228,9 +236,7 @@ submit_score['target'] = submit_score['target'].fillna(0)
 
 submit_score = submit_score.sort_values('id')
 submit_score['target'] = submit_score['target'].astype(int)
-
 sample = pd.read_csv('data/sample.csv')
 sample.columns = ['id', 'non_target']
 submit_score = pd.merge(sample, submit_score, on=['id'], how='left')
-
-submit_score[['id', 'target']].to_csv('result/baseline.csv', index=False)
+submit_score[['id', 'target']].to_csv('result/baseline{}.csv'.format(F1_score), index=False)
