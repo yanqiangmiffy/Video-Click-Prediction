@@ -387,8 +387,7 @@ def get_combination_fea(df):
 def get_cvr_fea(df):
     cat_list = set(['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
                    ['pos', 'osversion'] + \
-                   ['deviceid', 'level', 'personidentification', 'followscore', 'personalscore',
-                    'gender'])
+                   ['deviceid', 'newsid', 'guid'])
     print("cat_list", cat_list)
 
     # 类别特征五折转化率特征
@@ -414,10 +413,10 @@ history_10 = get_news_fea(history_10)
 history_11 = get_news_fea(history_11)
 history_12 = get_news_fea(history_12)
 
-# history_9 = get_ctr_fea(history_9)
-# history_10 = get_ctr_fea(history_10)
-# history_11 = get_ctr_fea(history_11)
-# history_12 = get_ctr_fea(history_12)
+history_9 = get_cvr_fea(history_9)
+history_10 = get_cvr_fea(history_10)
+history_11 = get_cvr_fea(history_11)
+history_12 = get_cvr_fea(history_12)
 
 history_9 = get_combination_fea(history_9)
 history_10 = get_combination_fea(history_10)
@@ -453,6 +452,7 @@ X_valid = data[data['flag'].isin([10])]
 X_test = data[data['flag'].isin([11])]
 X_train_2 = data[data['flag'].isin([9, 10])]
 del data
+del df_user, df_app
 lgb_param = {
     'learning_rate': 0.1,
     'boosting_type': 'gbdt',
