@@ -20,14 +20,6 @@ test = pd.read_csv('data/test.csv')
 train = train.sort_values(['deviceid', 'guid', 'ts'])
 test = test.sort_values(['deviceid', 'guid', 'ts'])
 
-# 查看数据是否存在交集
-# train deviceid 104736
-# test deviceid 56681
-# train&test deviceid 46833
-# train guid 104333
-# test guid 56861
-# train&test guid 46654
-
 print('train deviceid', len((set(train['deviceid']))))
 print('test deviceid', len((set(test['deviceid']))))
 print('train&test deviceid', len((set(train['deviceid']) & set(test['deviceid']))))
@@ -87,7 +79,7 @@ data['guid'] = data['guid'].fillna('abc')
 history_9 = data[data['days'].isin([7, 8])]
 history_10 = data[data['days'].isin([8, 9])]
 history_11 = data[data['days'].isin([9, 10])]
-history_12 = data[data['days'].isin([10, 11])]
+history_12 = data[data['days'].isin([11])]
 del data
 # 61326
 # 64766
@@ -212,7 +204,7 @@ xx_score = xx_score.reset_index()
 xx_score.loc[xx_score.index <= int(xx_score.shape[0] * 0.103), 'score'] = 1
 xx_score['score'] = xx_score['score'].fillna(0)
 f1 = f1_score(xx_score['target'], xx_score['score'])
-print("f1_score", f1_score)
+print("f1_score", f1)
 
 del lgb_train, lgb_valid
 del X_train, X_valid
@@ -243,3 +235,4 @@ sample.columns = ['id', 'non_target']
 submit_score = pd.merge(sample, submit_score, on=['id'], how='left')
 
 submit_score[['id', 'target']].to_csv('data/baseline{}.csv'.format(str(f1)), index=False)
+print("train predict finished...")
