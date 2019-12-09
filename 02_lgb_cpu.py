@@ -14,8 +14,6 @@ from utils import *
 from tqdm import tqdm
 import types
 
-# from get_feas_lpf_4 import load_data
-
 X_train, X_train_2, X_valid, X_test, no_features, features = load_data()
 train = X_train_2
 test = X_test
@@ -70,6 +68,16 @@ for i, (train_index, valid_index) in enumerate(kfold.split(train[features], trai
     # print("accuracy:",accuracy_score(y_valid, valid_pred))
     print("f1-score:", f1_score(y_valid, valid_pred))
     y_pred_all_l1 += pred(test[features].values, bst)
+
+    # 历史验证集
+    p_test = bst.predict_proba(X_valid[features].values)[:, 1]
+    xx_score = X_valid[['target']].copy()
+    xx_score['predict'] = p_test
+    xx_score = xx_score.sort_values('predict', ascending=False)
+    xx_score = xx_score.reset_index()
+    xx_score.loc[xx_score.index <= int(xx_score.shape[0] * 0.103), 'score'] = 1
+    xx_score['score'] = xx_score['score'].fillna(0)
+    print("历史验证集 f1_score", f1_score(xx_score['target'], xx_score['score']))
 
     # 训练完成 发送邮件
     mail(str(i) + "lgb cpu 训练完成，cv f1-score:{}".format(f1_score(y_valid, valid_pred)))
