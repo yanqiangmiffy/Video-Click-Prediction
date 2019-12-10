@@ -249,6 +249,9 @@ data['hour'] = data['datetime'].dt.hour
 data['minute'] = data['datetime'].dt.minute
 data['dayofweek'] = data['datetime'].dt.dayofweek
 
+# 经纬度唯一识别
+data['lat_lng'] = data['lat'].astype(str) + data['lng'].astype(str)
+
 # 缺失值填充
 data['guid'] = data['guid'].fillna('abc')
 from sklearn.preprocessing import LabelEncoder
@@ -279,7 +282,7 @@ def get_history_visit_time(data1, date2):
     data1['timestamp_ts'] = data1['timestamp'] - data1['ts']
     data1_tmp = data1[data1['target'] == 1].copy()
     del data1
-    for col in ['deviceid', 'guid', 'newsid']:
+    for col in ['deviceid', 'guid', 'newsid', 'lat_lng', 'lat', 'lng']:
         for ts in ['timestamp_ts']:
             f_tmp = data1_tmp.groupby([col], as_index=False)[ts].agg({
                 '{}_{}_max'.format(col, ts): 'max',
@@ -460,7 +463,7 @@ no_features = ['id', 'target', 'ts', 'guid', 'deviceid', 'newsid', 'timestamp', 
               ['id', 'target', 'timestamp', 'ts', 'isTest', 'day',
                'lat_mode', 'lng_mode', 'abtarget', 'applist_key',
                'applist_weight', 'tag_key', 'tag_weight', 'outertag_key', 'tag', 'outertag',
-               'outertag_weight', 'newsid', 'datetime'] + ['days']
+               'outertag_weight', 'newsid', 'datetime'] + ['days', 'lat_lng']
 
 feature = [fea for fea in X_train.columns if fea not in no_features]
 print(len(feature), feature, )
