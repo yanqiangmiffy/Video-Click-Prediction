@@ -331,6 +331,23 @@ def get_news_fea(df):
     return df
 
 
+# def get_ctr_fea(df):
+#     print("get_ctr_fea....")
+#     df['news_ctr_rate'] = df.groupby('newsid')['target'].transform('mean')  #
+#     # df['lat_ctr_rate'] = df.groupby('lat')['target'].transform('mean')  #
+#     # df['lng_ctr_rate'] = df.groupby('lng')['target'].transform('mean')  #
+#     # df['ts_ctr_rate'] = df.groupby('ts')['target'].transform('mean')  #
+#     # df['deviceid_ctr_rate'] = df.groupby('deviceid')['target'].transform('mean')  #
+#     # df['guid_ctr_rate'] = df.groupby('guid')['target'].transform('mean')  #
+#     # df['device_version_ctr_rate'] = df.groupby('device_version')['target'].transform('mean')  #
+#     # df['device_vendor_ctr_rate'] = df.groupby('device_vendor')['target'].transform('mean')  #
+#     # df['app_version_ctr_rate'] = df.groupby('app_version')['target'].transform('mean')  #
+#     # df['osversion_ctr_rate'] = df.groupby('osversion')['target'].transform('mean')  #
+#     # df['pos_ctr_rate'] = df.groupby('pos')['target'].transform('mean')  #
+#     df['netmodel_ctr_rate'] = df.groupby('netmodel')['target'].transform('mean')  #
+#     return df
+
+
 def get_combination_fea(df):
     """
     添加组合特征
@@ -368,7 +385,9 @@ def get_combination_fea(df):
 
 
 def get_cvr_fea(df):
-    cat_list = ['deviceid', 'newsid', 'guid']
+    cat_list = set(['device_version', 'device_vendor', 'app_version', 'osversion', 'netmodel'] + \
+                   ['pos', 'osversion'] + \
+                   ['deviceid', 'newsid', 'guid'])
     print("cat_list", cat_list)
 
     # 类别特征五折转化率特征
@@ -393,6 +412,11 @@ history_9 = get_news_fea(history_9)
 history_10 = get_news_fea(history_10)
 history_11 = get_news_fea(history_11)
 history_12 = get_news_fea(history_12)
+
+# history_9 = get_cvr_fea(history_9)
+# history_10 = get_cvr_fea(history_10)
+# history_11 = get_cvr_fea(history_11)
+# history_12 = get_cvr_fea(history_12)
 
 history_9 = get_combination_fea(history_9)
 history_10 = get_combination_fea(history_10)
@@ -427,12 +451,6 @@ X_train = data[data['flag'].isin([9])]
 X_valid = data[data['flag'].isin([10])]
 X_test = data[data['flag'].isin([11])]
 X_train_2 = data[data['flag'].isin([9, 10])]
-
-X_train = get_cvr_fea(X_train)
-X_valid = get_cvr_fea(X_valid)
-X_test = get_cvr_fea(X_test)
-X_train_2 = get_cvr_fea(X_train_2)
-
 del data
 del df_user, df_app
 lgb_param = {
