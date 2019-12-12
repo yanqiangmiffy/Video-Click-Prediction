@@ -241,7 +241,28 @@ cluster_fea = pd.read_csv('features/01_user_cluster.csv')
 data = pd.merge(data, cluster_fea, on='deviceid', how='left')
 del cluster_fea
 gc.collect()
+def get_cvr_fea(df):
+    cat_list = ['deviceid', 'newsid', 'guid']
+    print("cat_list", cat_list)
 
+    # 类别特征五折转化率特征
+    print("转化率特征....")
+    df['ID'] = df.index
+    df['fold'] = df['ID'] % 5
+    df.loc[df.target.isnull(), 'fold'] = 5
+    target_feat = []
+    for i in tqdm(cat_list):
+        target_feat.extend([i + '_mean_last_1'])
+        df[i + '_mean_last_1'] = None
+        for fold in range(6):
+            df.loc[df['fold'] == fold, i + '_mean_last_1'] = df[df['fold'] == fold][i].map(
+                df[(df['fold'] != fold) & (df['fold'] != 5)].groupby(i)['target'].mean()
+            )
+        df[i + '_mean_last_1'] = df[i + '_mean_last_1'].astype(float)
+
+    return df
+
+data = get_cvr_fea(data)
 del train, test
 
 # 小时信息
@@ -370,26 +391,6 @@ def get_combination_fea(df):
     return df
 
 
-def get_cvr_fea(df):
-    cat_list = ['deviceid', 'newsid', 'guid']
-    print("cat_list", cat_list)
-
-    # 类别特征五折转化率特征
-    print("转化率特征....")
-    df['ID'] = df.index
-    df['fold'] = df['ID'] % 5
-    df.loc[df.target.isnull(), 'fold'] = 5
-    target_feat = []
-    for i in tqdm(cat_list):
-        target_feat.extend([i + '_mean_last_1'])
-        df[i + '_mean_last_1'] = None
-        for fold in range(6):
-            df.loc[df['fold'] == fold, i + '_mean_last_1'] = df[df['fold'] == fold][i].map(
-                df[(df['fold'] != fold) & (df['fold'] != 5)].groupby(i)['target'].mean()
-            )
-        df[i + '_mean_last_1'] = df[i + '_mean_last_1'].astype(float)
-
-    return df
 
 
 history_9 = get_news_fea(history_9)
@@ -431,10 +432,10 @@ X_valid = data[data['flag'].isin([10])]
 X_test = data[data['flag'].isin([11])]
 X_train_2 = data[data['flag'].isin([9, 10])]
 
-X_train = get_cvr_fea(X_train)
-X_valid = get_cvr_fea(X_valid)
-X_test = get_cvr_fea(X_test)
-X_train_2 = get_cvr_fea(X_train_2)
+# X_train = get_cvr_fea(X_train)
+# X_valid = get_cvr_fea(X_valid)
+# X_test = get_cvr_fea(X_test)
+# X_train_2 = get_cvr_fea(X_train_2)
 
 del data
 del df_user, df_app
