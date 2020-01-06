@@ -198,6 +198,152 @@ for f in cross_cols:
 del df['id']
 gc.collect()
 
+print('***************************添加类别组合count特征*******************************')
+combination_cols = []
+df['deviceid_newsid'] = (df['deviceid'].astype(str) + df['newsid'].astype(str)).astype('category')
+df['guid_newsid'] = (df['guid'].astype(str) + df['newsid'].astype(str)).astype('category')
+df['pos_newsid'] = (df['pos'].astype(str) + df['newsid'].astype(str)).astype('category')
+df['device_vendor_newsid'] = (df['device_vendor'].astype(str) + df['newsid'].astype(str)).astype('category')
+df['lng_newsid'] = (df['lng'].astype(str) + df['newsid'].astype(str)).astype('category')
+df['hour_newsid'] = (df['hour'].astype(str) + df['newsid'].astype(str)).astype('category')
+df['dayofweek_newsid'] = (df['dayofweek'].astype(str) + df['newsid'].astype(str)).astype('category')
+
+df['dayofweek_hour'] = (df['dayofweek'].astype(str) + df['hour'].astype(str)).astype('category')
+
+df['netmodel_hour'] = (df['netmodel'].astype(str) + df['hour'].astype(str)).astype('category')
+df['netmodel_dayofweek'] = (df['netmodel'].astype(str) + df['dayofweek'].astype(str)).astype('category')
+
+combination_cols.extend([
+    'deviceid_newsid', 'guid_newsid',
+    'pos_newsid', 'device_vendor_newsid',
+    'lng_newsid', 'hour_newsid',
+    'dayofweek_newsid', 'dayofweek_hour',
+    'netmodel_hour', 'netmodel_dayofweek'
+])
+
+for col in combination_cols:
+    print(col)
+    df['{}_count'.format(col)] = df.groupby(col)['id'].transform('count')
+    del df[col]
+    gc.collect()
+
+print('***************************添加app特征*******************************')
+app_df = pd.read_csv('data/app.csv')
+app_grouped_df = pd.DataFrame({'deviceid': app_df['deviceid'].unique()})
+
+# 统计一个设备的出现过的app总数
+app_df['app_nums'] = app_df['applist'].apply(lambda x: len(x.replace('[', '').replace(']', '').split(' ')))
+app_df.app_nums.head()
+
+grouped_df = app_df.groupby(by='deviceid').agg({'app_nums': ['sum']})
+grouped_df.columns = ['app_nums_sum']
+grouped_df = grouped_df.reset_index()
+app_grouped_df = pd.merge(app_grouped_df, grouped_df, on='deviceid', how='left')
+
+# 统计一个设备上applist对应的不同device个数总数
+app_df['applist_count'] = app_df.groupby('applist')['deviceid'].transform('count')
+grouped_df = app_df.groupby(by='deviceid').agg({'applist_count': ['sum']})
+grouped_df.columns = ['applist_count_sum']
+grouped_df = grouped_df.reset_index()
+app_grouped_df = pd.merge(app_grouped_df, grouped_df, on='deviceid', how='left')
+
+df = pd.merge(df, app_grouped_df, on='deviceid', how='left')
+del app_grouped_df,grouped_df
+del app_df
+gc.collect()
+
+print('***************************添加user*******************************')
+user_df = pd.read_csv('data/user.csv')
+user_grouped_df = pd.DataFrame({'deviceid': user_df['deviceid'].unique()})
+# 统计一个设备的注册不同用户个数
+grouped_df = user_df.groupby(by='deviceid').agg({'guid': ['nunique', 'count']})
+grouped_df.columns = ['deviceid_guid_unique', 'deviceid_guid_count']
+grouped_df = grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+
+# 一个设备的outertag 的统计
+def get_outertag_nums(x):
+    """
+    获取一个outertag的tag个数
+    """
+    if x == 'nan':
+        return 0
+    return len(x.split('|')) - 1
+
+
+def get_outertag_score(x):
+    """
+    获取一个outertag的tag分数和
+    """
+    tags = x.split('|')
+
+    score = 0
+    if len(tags) == 1 and tags[0] == 'nan':
+        return score
+    else:
+        for tag in tags:
+            if len(tag.split(':')) == 2:
+                score += float(tag.split(':')[1])
+            else:
+                score += 0
+    return score
+
+
+user_df['outertag_nums'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_nums(x))
+user_df['outertag_score'] = user_df['outertag'].astype('str').apply(lambda x: get_outertag_score(x))
+
+user_df['tag_nums'] = user_df['tag'].astype('str').apply(lambda x: get_outertag_nums(x))
+user_df['tag_score'] = user_df['tag'].astype('str').apply(lambda x: get_outertag_score(x))
+
+grouped_df = user_df.groupby(by='deviceid').agg({'outertag_nums': ['sum']})
+grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+grouped_df = user_df.groupby(by='deviceid').agg({'outertag_score': ['sum']})
+grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+grouped_df = user_df.groupby(by='deviceid').agg({'tag_nums': ['sum']})
+grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+grouped_df = user_df.groupby(by='deviceid').agg({'tag_score': ['sum']})
+grouped_df.columns = ['deviceid_' + '_'.join(col).strip() for col in grouped_df.columns.values]
+grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+#
+# 设备的用户等级统计
+grouped_df = user_df.groupby(by='deviceid').agg({'level': ['sum']})
+grouped_df.columns = ['deviceid_level_sum']
+grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+# 设备的用户劣质统计
+# 1表示劣质用户 0表示正常用户。
+grouped_df = user_df.groupby(by='deviceid').agg({'personidentification': ['sum']})
+grouped_df.columns = ['deviceid_personidentification_sum']
+grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+grouped_df = user_df.groupby(by='deviceid').agg({'personalscore': ['sum']})
+grouped_df.columns = ['deviceid_personalscore_sum']
+grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+#
+grouped_df = user_df.groupby(by='deviceid').agg({'followscore': ['sum']})
+grouped_df.columns = ['deviceid_followscore_sum']
+grouped_df.reset_index()
+user_grouped_df = pd.merge(user_grouped_df, grouped_df, on='deviceid', how='left')
+
+df = pd.merge(df, user_grouped_df, on='deviceid', how='left')
+del user_grouped_df,grouped_df
+del user_df
+gc.collect()
+
 print('========================================================================================================')
 train_df = df[:train_num].reset_index(drop=True)
 train_df['label'] = labels

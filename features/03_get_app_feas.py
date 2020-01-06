@@ -8,17 +8,7 @@
 @description:
 """
 import pandas as pd
-import numpy as np
-from tqdm import tqdm
-from sklearn.preprocessing import *
-from numpy import random
 from pathlib import Path
-import gc
-import datetime
-from sklearn.utils import shuffle
-from utils import *
-import time
-
 root = Path('../data/')
 
 app_df = pd.read_csv(root / 'app.csv')
